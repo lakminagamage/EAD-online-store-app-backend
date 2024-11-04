@@ -12,7 +12,7 @@ import (
 var DB *gorm.DB
 
 func Connect() {
-    dsn := "host=localhost user=postgres password=Abcd1234 dbname=productdb port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+    dsn := "host=ep-small-morning-a58y2k1s.us-east-2.aws.neon.tech user=ead-order-service_owner password=SMWgZJa2ceR0 dbname=ead-product-service port=5432 sslmode=require TimeZone=Asia/Shanghai"
 
     var err error
     for i := 0; i < 10; i++ {

@@ -4,14 +4,14 @@ import (
     "log"
     "net/http"
     "product-service/handlers"
-    // "product-service/pkg/database"
-    // "product-service/models"
+    "product-service/pkg/database"
+    "product-service/models"
     "github.com/gorilla/mux"
 )
 
 func main() {
-    //database.Connect()
-    //database.DB.AutoMigrate(&models.Product{})
+    database.Connect()
+    database.DB.AutoMigrate(&models.Product{})
 
     r := mux.NewRouter()
     r.HandleFunc("/products", handlers.GetAllProducts).Methods("GET")

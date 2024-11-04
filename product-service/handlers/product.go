@@ -1,27 +1,26 @@
 package handlers
 
 import (
-    "encoding/json"
-    "log"
-    "net/http"
-    "product-service/models"
-    "product-service/pkg/database"
-    "github.com/gorilla/mux"
+	"encoding/json"
+	"log"
+	"net/http"
+	"product-service/models"
+	"product-service/pkg/database"
+
+	"github.com/gorilla/mux"
 )
 
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
-    log.Println("GetAllProducts called")
-
-    // var products []models.Product
-    // if err := database.DB.Find(&products).Error; err != nil {
-    //     log.Println("Error retrieving products:", err)
-    //     http.Error(w, err.Error(), http.StatusInternalServerError)
-    //     return
-    // }
-    // 
-    // log.Println("Products retrieved:", products)
-    // w.Header().Set("Content-Type", "application/json")
-    // json.NewEncoder(w).Encode(products)
+    var products []models.Product
+    if err := database.DB.Find(&products).Error; err != nil {
+        log.Println("Error retrieving products:", err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    
+    log.Println("Products retrieved:", products)
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(products)
 }
 
 

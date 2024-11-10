@@ -7,7 +7,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DB_HOST: ep-small-morning-a58y2k1s.us-east-2.aws.neon.tech
-      DB_USER: ead-order-service_owner
-      DB_PASSWORD: SMWgZJa2ceR0
-      DB_NAME: ead-product-service
+      - DB_HOST
+      - DB_USER
+      - DB_PASSWORD
+      - DB_NAME
+      - DB_PORT
+    env_file:
+      - .env

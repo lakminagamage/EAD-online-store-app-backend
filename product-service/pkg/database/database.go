@@ -20,15 +20,13 @@ func Connect() {
         log.Fatalf("Error loading .env file")
     }
 
-    dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require",
+    dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require timezone=Asia/sri_lanka",
         os.Getenv("DB_HOST"),
         os.Getenv("DB_USER"),
         os.Getenv("DB_PASSWORD"),
         os.Getenv("DB_NAME"),
         os.Getenv("DB_PORT"),
     )
-
-    log.Printf("Connecting to database at %s", os.Getenv("DB_HOST"))
 
     var err error
     for i := 0; i < 10; i++ {

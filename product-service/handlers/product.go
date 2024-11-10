@@ -17,8 +17,17 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
+
+    for i, product := range products {
+        var productType models.ProductType
+        if err := database.DB.First(&productType, product.ProductTypeID).Error; err != nil {
+            log.Println("Error retrieving product type:", err)
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+        products[i].ProductType = productType
+    }
     
-    log.Println("Products retrieved:", products)
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(products)
 }
@@ -31,7 +40,33 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Product not found", http.StatusNotFound)
         return
     }
+
+    var productType models.ProductType
+    if err := database.DB.First(&productType, product.ProductTypeID).Error; err != nil {
+        http.Error(w, "Product type not found", http.StatusNotFound)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(product)
+}
+
+func GetAllProductsByProductType(w http.ResponseWriter, r *http.Request) {
+    params := mux.Vars(r)
+    var productType models.ProductType
+    if err := database.DB.First(&productType, params["id"]).Error; err != nil {
+        http.Error(w, "Product type not found", http.StatusNotFound)
+        return
+    }
+
+    var products []models.Product
+    if err := database.DB.Model(&productType).Association("Products").Find(&products); err != nil {
+        http.Error(w, "Error retrieving products", http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(products)
 }
 
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +75,18 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Invalid input", http.StatusBadRequest)
         return
     }
+
+    // check the product type is exists
+    var productType models.ProductType
+    if err := database.DB.First(&productType, product.ProductTypeID).Error; err != nil {
+        http.Error(w, "Product type not found", http.StatusNotFound)
+        return
+    }
+
+    if product.Quantity == 0 {
+        product.Quantity = 0
+    }
+
     database.DB.Create(&product)
     json.NewEncoder(w).Encode(product)
 }
@@ -55,6 +102,14 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Invalid input", http.StatusBadRequest)
         return
     }
+
+    // check the product type is exists
+    var productType models.ProductType
+    if err := database.DB.First(&productType, product.ProductTypeID).Error; err != nil {
+        http.Error(w, "Product type not found", http.StatusNotFound)
+        return
+    }
+
     database.DB.Save(&product)
     json.NewEncoder(w).Encode(product)
 }

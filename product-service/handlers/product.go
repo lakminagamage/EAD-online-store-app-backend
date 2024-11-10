@@ -6,14 +6,30 @@ import (
 	"net/http"
 	"product-service/models"
 	"product-service/pkg/database"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
+
+func paginate(r *http.Request, query *gorm.DB) *gorm.DB {
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if pageSize < 1 {
+		pageSize = 10
+	}
+	offset := (page - 1) * pageSize
+	return query.Offset(offset).Limit(pageSize)
+}
 
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
     var products []models.Product
-    if err := database.DB.Find(&products).Error; err != nil {
+    query := paginate(r, database.DB)
+    if err := query.Find(&products).Error; err != nil {
         log.Println("Error retrieving products:", err)
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -32,7 +48,6 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(products)
 }
-
 
 func GetProductByID(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
@@ -61,8 +76,11 @@ func GetAllProductsByProductType(w http.ResponseWriter, r *http.Request) {
     }
 
     var products []models.Product
-    if err := database.DB.Model(&productType).Association("Products").Find(&products); err != nil {
-        http.Error(w, "Error retrieving products", http.StatusInternalServerError)
+    query := database.DB.Where("product_type_id = ?", productType.ID)
+    query = paginate(r, query)
+
+    if err := query.Find(&products).Error; err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
@@ -155,6 +173,7 @@ func SearchProducts(w http.ResponseWriter, r *http.Request) {
         query = query.Where("product_type_id = ?", productTypeID)
     }
 
+    query = paginate(r, query)
     if err := query.Find(&products).Error; err != nil {
         log.Println("Error retrieving products:", err)
         http.Error(w, err.Error(), http.StatusInternalServerError)

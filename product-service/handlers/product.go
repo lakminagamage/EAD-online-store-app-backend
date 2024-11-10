@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"product-service/models"
 	"product-service/pkg/database"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -123,4 +124,54 @@ func DeleteProduct(w http.ResponseWriter, r *http.Request) {
     }
     database.DB.Delete(&product)
     w.WriteHeader(http.StatusNoContent)
+}
+
+func SearchProducts(w http.ResponseWriter, r *http.Request) {
+    log.Println("Query parameters:", r.URL.Query())
+    
+    var products []models.Product
+    query := database.DB
+
+    if name := r.URL.Query().Get("name"); name != "" {
+        query = query.Where("LOWER(name) LIKE ?", "%"+strings.ToLower(name)+"%")
+    }
+
+    minPrice := r.URL.Query().Get("min_price")
+    maxPrice := r.URL.Query().Get("max_price")
+
+    if minPrice != "" && maxPrice != "" {
+        query = query.Where("price BETWEEN ? AND ?", minPrice, maxPrice)
+    } else if minPrice != "" {
+        query = query.Where("price >= ?", minPrice)
+    } else if maxPrice != "" {
+        query = query.Where("price <= ?", maxPrice)
+    }
+
+    if inStock := r.URL.Query().Get("in_stock"); inStock != "" && inStock == "true" {
+        query = query.Where("quantity > 0")
+    }
+
+    if productTypeID := r.URL.Query().Get("product_type_id"); productTypeID != "" {
+        query = query.Where("product_type_id = ?", productTypeID)
+    }
+
+    if err := query.Find(&products).Error; err != nil {
+        log.Println("Error retrieving products:", err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Uncomment this block to include the product type in the response
+    // for i, product := range products {
+    //     var productType models.ProductType
+    //     if err := database.DB.First(&productType, product.ProductTypeID).Error; err != nil {
+    //         log.Println("Error retrieving product type:", err)
+    //         http.Error(w, err.Error(), http.StatusInternalServerError)
+    //         return
+    //     }
+    //     products[i].ProductType = productType
+    // }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(products)
 }

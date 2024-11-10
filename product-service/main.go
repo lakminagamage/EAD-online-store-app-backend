@@ -26,6 +26,7 @@ func main() {
     r.HandleFunc("/products", handlers.CreateProduct).Methods("POST")
     r.HandleFunc("/products/{id}", handlers.UpdateProduct).Methods("PUT")
     r.HandleFunc("/products/{id}", handlers.DeleteProduct).Methods("DELETE")
+    r.HandleFunc("/products-search", handlers.SearchProducts).Methods("GET")
 
     // product-type controller routes
     r.HandleFunc("/product-types", handlers.GetAllProductTypes).Methods("GET")

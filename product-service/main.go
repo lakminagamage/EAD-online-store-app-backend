@@ -3,9 +3,10 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"product-service/handlers"
 
-	// "product-service/models" // Uncomment this line to migrate the schema
+	"product-service/models" // Uncomment this line to migrate the schema
 	"product-service/pkg/database"
 
 	"github.com/gorilla/mux"
@@ -15,7 +16,7 @@ func main() {
     database.Connect()
 
     // Migrate the schema if needed
-    // database.DB.AutoMigrate(&models.Product{}, &models.ProductType{})
+    database.DB.AutoMigrate(&models.Product{}, &models.ProductType{})
 
     r := mux.NewRouter()
 
@@ -33,6 +34,9 @@ func main() {
     r.HandleFunc("/product-types", handlers.CreateProductType).Methods("POST")
     r.HandleFunc("/product-types/{id}", handlers.DeleteProductType).Methods("DELETE")
 
-    log.Println("Server starting on port 8000")
-    log.Fatal(http.ListenAndServe(":8000", r))
+
+    // get the port from the env file
+    port := os.Getenv("DB_PORT")
+    log.Println("Server starting on port " + port)
+    log.Fatal(http.ListenAndServe(":" + port, r))
 }

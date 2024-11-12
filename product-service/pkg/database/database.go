@@ -28,8 +28,6 @@ func Connect() {
         os.Getenv("DB_PORT"),
     )
 
-    log.Println(dsn)
-
     var err error
     for i := 0; i < 10; i++ {
         DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})

@@ -197,8 +197,6 @@ func DeleteProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func SearchProducts(w http.ResponseWriter, r *http.Request) {
-    log.Println("Query parameters:", r.URL.Query())
-    
     var products []models.Product
     query := database.DB
 

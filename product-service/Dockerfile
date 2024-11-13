@@ -9,16 +9,16 @@ COPY go.mod ./
 COPY go.sum ./
 
 # Download Go module dependencies (only if go.mod/go.sum exist)
-RUN if [ -f go.mod ]; then go mod download; fi
+RUN go mod tidy
 
 # Copy the rest of the application code to the container
 COPY . .
 
 # Build the Go app
-RUN go build -o product-service ./cmd/main.go
+RUN go build -o product-service main.go
 
-# Expose the service on port 8000
-EXPOSE 8000
+# Expose the service on port 8081
+EXPOSE 8081
 
 # Command to run the built Go application
 CMD ["./product-service"]

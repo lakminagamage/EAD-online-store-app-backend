@@ -1,6 +1,7 @@
 package com.ead.user_service.service;
 
 import com.ead.user_service.dto.UserCreateDTO;
+import com.ead.user_service.dto.UserUpdateDTO;
 import com.ead.user_service.dto.UserDTO;
 import com.ead.user_service.model.User;
 import com.ead.user_service.repository.UserRepository;
@@ -39,6 +40,24 @@ public class UserService {
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return mapToUserDTO(user);
+    }
+
+    public UserDTO updateUser(UserUpdateDTO userUpdateDTO){
+        User user = userRepository.findById(userUpdateDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (userUpdateDTO.getName() != null) user.setName(userUpdateDTO.getName());
+        if (userUpdateDTO.getEmail() != null) user.setEmail(userUpdateDTO.getEmail());
+        if (userUpdateDTO.getPassword() != null)
+            user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
+        if (userUpdateDTO.getCountry() != null) user.setCountry(userUpdateDTO.getCountry());
+        if (userUpdateDTO.getPhone() != null) user.setPhone(userUpdateDTO.getPhone());
+        if (userUpdateDTO.getPostalCode() != 0) user.setPostalCode(userUpdateDTO.getPostalCode());
+
+        user.setUpdatedAt(LocalDateTime.now());
+
+        user = userRepository.save(user);
         return mapToUserDTO(user);
     }
 

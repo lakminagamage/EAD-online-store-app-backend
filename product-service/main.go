@@ -27,14 +27,14 @@ func main() {
     r.HandleFunc("/products/{id}", handlers.UpdateProduct).Methods("PUT")
     r.HandleFunc("/products/{id}", handlers.DeleteProduct).Methods("DELETE")
     r.HandleFunc("/products/{id}/stock", handlers.UpdateStock).Methods("PATCH")
-    r.HandleFunc("/search", handlers.SearchProducts).Methods("GET")
-    r.HandleFunc("/by-ids", handlers.GetProductsByIDs).Methods("GET")
-    r.HandleFunc("/by-type/{id}", handlers.GetAllProductsByProductType).Methods("GET")
+    r.HandleFunc("/products/search/", handlers.SearchProducts).Methods("GET")
+    r.HandleFunc("/products/by-ids/", handlers.GetProductsByIDs).Methods("GET")
+    r.HandleFunc("/products/by-type/{id}", handlers.GetAllProductsByProductType).Methods("GET")
 
     // product-type controller routes
-    r.HandleFunc("/product-types", handlers.GetAllProductTypes).Methods("GET")
-    r.HandleFunc("/product-types", handlers.CreateProductType).Methods("POST")
-    r.HandleFunc("/product-types/{id}", handlers.DeleteProductType).Methods("DELETE")
+    r.HandleFunc("/products/types/", handlers.GetAllProductTypes).Methods("GET")
+    r.HandleFunc("/products/types/", handlers.CreateProductType).Methods("POST")
+    r.HandleFunc("/products/types/{id}", handlers.DeleteProductType).Methods("DELETE")
 
     // get the port from the env file
     port := os.Getenv("PORT")

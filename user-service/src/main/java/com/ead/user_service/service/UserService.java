@@ -42,10 +42,13 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return mapToUserDTO(user);
     }
-
-    public UserDTO updateUser(UserUpdateDTO userUpdateDTO){
-        User user = userRepository.findById(userUpdateDTO.getId())
+    private User findUserById(Long id){
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return user;
+    }
+    public UserDTO updateUser(UserUpdateDTO userUpdateDTO){
+        User user = findUserById(userUpdateDTO.getId());
 
         if (userUpdateDTO.getName() != null) user.setName(userUpdateDTO.getName());
         if (userUpdateDTO.getEmail() != null) user.setEmail(userUpdateDTO.getEmail());

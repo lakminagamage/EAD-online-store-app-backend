@@ -1,6 +1,7 @@
 package com.ead.user_service.controller;
 
 import com.ead.user_service.dto.UserCreateDTO;
+import com.ead.user_service.dto.UserUpdateDTO;
 import com.ead.user_service.dto.UserDTO;
 import com.ead.user_service.service.UserService;
 import jakarta.validation.Valid;
@@ -26,4 +27,15 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> updateUser( @PathVariable Long id, @RequestBody @Valid UserUpdateDTO userUpdateDTO){
+        // to ensure the DTO contains the correct ID
+        userUpdateDTO.setId(id);
+
+        UserDTO updatedUser = userService.updateUser(userUpdateDTO);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+
 }

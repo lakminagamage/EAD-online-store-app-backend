@@ -12,10 +12,12 @@ router.use(
     changeOrigin: true,
     pathRewrite: (path, req) => {
       // if path does nor contain /products/ ignore it otherwise change the path
-      if (!path.includes("/products/")) {
-        return path;
-      }
+      console.log(`Path: ${path}`);
       return `/products/${path}`;
+      // if (!path.includes("/products/")) {
+      //   return path;
+      // }
+      // return `/products/${path}`;
     },
     on: {
       proxyReq: (proxyReq, req, res) => {

@@ -28,14 +28,20 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    @GetMapping("/email")
+    public ResponseEntity<UserDTO> getUserByEmail(@RequestParam String email) {
+        return ResponseEntity.ok(userService.getUserByEmail(email));
+    }
+  
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser( @PathVariable Long id, @RequestBody @Valid UserUpdateDTO userUpdateDTO){
-        // to ensure the DTO contains the correct ID
         userUpdateDTO.setId(id);
-
         UserDTO updatedUser = userService.updateUser(userUpdateDTO);
         return ResponseEntity.ok(updatedUser);
     }
-
-
+  
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.deleteUserById(id));
+    }
 }

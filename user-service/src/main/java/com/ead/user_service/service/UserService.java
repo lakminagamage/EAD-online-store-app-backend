@@ -42,6 +42,14 @@ public class UserService {
         return mapToUserDTO(user);
     }
 
+    public String  deleteUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        userRepository.delete(user);
+        return "User deleted successfully.";
+
+    }
+
     private UserDTO mapToUserDTO(User user) {
         return new UserDTO(user.getId(), user.getType(), user.getName(), user.getEmail(),
                 user.getCountry(), user.getPhone(), user.getPostalCode(),

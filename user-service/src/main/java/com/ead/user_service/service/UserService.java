@@ -55,4 +55,10 @@ public class UserService {
                 user.getCountry(), user.getPhone(), user.getPostalCode(),
                 user.getCreatedAt().toString(), user.getUpdatedAt().toString());
     }
+
+    public UserDTO getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return mapToUserDTO(user);
+    }
 }

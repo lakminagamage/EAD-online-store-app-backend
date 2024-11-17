@@ -7,7 +7,6 @@ import com.ead.user_service.model.User;
 import com.ead.user_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,15 +17,11 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
         User user = new User();
         user.setType(userCreateDTO.getType());
         user.setName(userCreateDTO.getName());
         user.setEmail(userCreateDTO.getEmail());
-        user.setPassword(passwordEncoder.encode(userCreateDTO.getPassword()));
         user.setCountry(userCreateDTO.getCountry());
         user.setPhone(userCreateDTO.getPhone());
         user.setPostalCode(userCreateDTO.getPostalCode());
@@ -42,21 +37,31 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return mapToUserDTO(user);
     }
-    private User findUserById(Long id){
-        User user = userRepository.findById(id)
+
+    public UserDTO getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return user;
+        return mapToUserDTO(user);
     }
-    public UserDTO updateUser(UserUpdateDTO userUpdateDTO){
+
+    public UserDTO updateUser(UserUpdateDTO userUpdateDTO) {
         User user = findUserById(userUpdateDTO.getId());
 
-        if (userUpdateDTO.getName() != null) user.setName(userUpdateDTO.getName());
-        if (userUpdateDTO.getEmail() != null) user.setEmail(userUpdateDTO.getEmail());
-        if (userUpdateDTO.getPassword() != null)
-            user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
-        if (userUpdateDTO.getCountry() != null) user.setCountry(userUpdateDTO.getCountry());
-        if (userUpdateDTO.getPhone() != null) user.setPhone(userUpdateDTO.getPhone());
-        if (userUpdateDTO.getPostalCode() != 0) user.setPostalCode(userUpdateDTO.getPostalCode());
+        // validate user not found
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
+
+        if (userUpdateDTO.getName() != null)
+            user.setName(userUpdateDTO.getName());
+        if (userUpdateDTO.getEmail() != null)
+            user.setEmail(userUpdateDTO.getEmail());
+        if (userUpdateDTO.getCountry() != null)
+            user.setCountry(userUpdateDTO.getCountry());
+        if (userUpdateDTO.getPhone() != null)
+            user.setPhone(userUpdateDTO.getPhone());
+        if (userUpdateDTO.getPostalCode() != 0)
+            user.setPostalCode(userUpdateDTO.getPostalCode());
 
         user.setUpdatedAt(LocalDateTime.now());
 
@@ -64,7 +69,7 @@ public class UserService {
         return mapToUserDTO(user);
     }
 
-    public String  deleteUserById(Long id) {
+    public String deleteUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         userRepository.delete(user);
@@ -78,9 +83,10 @@ public class UserService {
                 user.getCreatedAt().toString(), user.getUpdatedAt().toString());
     }
 
-    public UserDTO getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
+    private User findUserById(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return mapToUserDTO(user);
+        return user;
     }
+
 }

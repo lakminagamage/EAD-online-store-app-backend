@@ -3,8 +3,10 @@ package database
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -12,7 +14,19 @@ import (
 var DB *gorm.DB
 
 func Connect() {
-    dsn := "host=ep-small-morning-a58y2k1s.us-east-2.aws.neon.tech user=ead-order-service_owner password=SMWgZJa2ceR0 dbname=ead-product-service port=5432 sslmode=require TimeZone=Asia/Shanghai"
+    // Load .env file
+    err_env := godotenv.Load()
+    if err_env != nil {
+        log.Fatalf("Error loading .env file")
+    }
+
+    dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require",
+        os.Getenv("DB_HOST"),
+        os.Getenv("DB_USER"),
+        os.Getenv("DB_PASSWORD"),
+        os.Getenv("DB_NAME"),
+        os.Getenv("DB_PORT"),
+    )
 
     var err error
     for i := 0; i < 10; i++ {

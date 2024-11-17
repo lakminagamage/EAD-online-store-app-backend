@@ -11,7 +11,10 @@ The **Product Service** is a microservice within an online shopping application.
   - [Environment Variables](#environment-variables)
   - [Docker Installation](#docker-installation)
 - [Endpoints](#endpoints)
+  - [Request and Response Examples](#request-and-response-examples)
 - [Usage](#usage)
+  - [Example Commands](#example-commands)
+- [License](#license)
 
 ## Features
 
@@ -23,8 +26,7 @@ The **Product Service** is a microservice within an online shopping application.
 
 ```plaintext
 product-service/
-├── cmd/
-│   └── main.go              # Main entry point for the application
+├── main.go                  # Main entry point for the application
 ├── pkg/
 │   └── database/
 │       └── database.go      # Database connection setup

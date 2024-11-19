@@ -7,6 +7,7 @@ import (
 	"product-service/handlers"
 	"product-service/models"
 	"product-service/pkg/database"
+	"strings"
 	"testing"
 
 	"github.com/glebarez/sqlite"
@@ -85,5 +86,97 @@ func TestGetAllProducts(t *testing.T) {
 		if product != expected[i] {
 			t.Errorf("handler returned unexpected product at index %d: got %v want %v", i, product, expected[i])
 		}
+	}
+}
+
+func TestGetProductByID(t *testing.T) {
+	db := setupTestDB()
+	database.DB = db
+
+	req, err := http.NewRequest("GET", "/products/1", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(handlers.GetProductByID)
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+
+	var actual models.Product
+	if err := json.Unmarshal(rr.Body.Bytes(), &actual); err != nil {
+		t.Fatalf("could not unmarshal response: %v", err)
+	}
+
+	expected := models.Product{Name: "Product1", ProductTypeID: 1, Stock: 10}
+	if actual.Name != expected.Name || actual.ProductTypeID != expected.ProductTypeID || actual.Stock != expected.Stock {
+		t.Errorf("handler returned unexpected product: got %v want %v", actual, expected)
+	}
+}
+
+func TestUpdateStock(t *testing.T) {
+	db := setupTestDB()
+	database.DB = db
+
+	req, err := http.NewRequest("PUT", "/products/1/stock?stock=100", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(handlers.UpdateStock)
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+
+	var actual models.Product
+	if err := json.Unmarshal(rr.Body.Bytes(), &actual); err != nil {
+		t.Fatalf("could not unmarshal response: %v", err)
+	}
+
+	expected := models.Product{Name: "Product1", ProductTypeID: 1, Stock: 100}
+	if actual.Name != expected.Name || actual.ProductTypeID != expected.ProductTypeID || actual.Stock != expected.Stock {
+		t.Errorf("handler returned unexpected product: got %v want %v", actual, expected)
+	}
+}
+
+func TestCreateProduct(t *testing.T) {
+	db := setupTestDB()
+	database.DB = db
+
+	newProduct := models.Product{Name: "NewProduct", ProductTypeID: 1, Stock: 10}
+	body, err := json.Marshal(newProduct)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err := http.NewRequest("POST", "/products", strings.NewReader(string(body)))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(handlers.CreateProduct)
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	}
+
+	var actual models.Product
+	if err := json.Unmarshal(rr.Body.Bytes(), &actual); err != nil {
+		t.Fatalf("could not unmarshal response: %v", err)
+	}
+
+	if actual.Name != newProduct.Name || actual.ProductTypeID != newProduct.ProductTypeID || actual.Stock != newProduct.Stock {
+		t.Errorf("handler returned unexpected product: got %v want %v", actual, newProduct)
 	}
 }

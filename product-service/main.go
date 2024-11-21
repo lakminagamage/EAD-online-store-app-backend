@@ -6,7 +6,7 @@ import (
 	"os"
 	"product-service/handlers"
 
-	//"product-service/models" // Uncomment this line to migrate the schema
+	"product-service/models" // Uncomment this line to migrate the schema
 	"product-service/pkg/database"
 
 	"github.com/gorilla/mux"
@@ -16,7 +16,7 @@ func main() {
     database.Connect()
 
     // Migrate the schema if needed
-    //database.DB.AutoMigrate(&models.Product{}, &models.ProductType{})
+    database.DB.AutoMigrate(&models.Product{}, &models.ProductType{}, &models.ProductImage{})
 
     r := mux.NewRouter()
 

@@ -29,7 +29,7 @@ func paginate(r *http.Request, query *gorm.DB) *gorm.DB {
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
     var products []models.Product
     query := paginate(r, database.DB)
-    if err := query.Find(&products).Error; err != nil {
+    if err := query.Preload("Images").Find(&products).Error; err != nil {
         log.Println("Error retrieving products:", err)
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -52,7 +52,7 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 func GetProductByID(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     var product models.Product
-    if err := database.DB.First(&product, params["id"]).Error; err != nil {
+    if err := database.DB.Preload("Images").First(&product, params["id"]).Error; err != nil {
         http.Error(w, "Product not found", http.StatusNotFound)
         return
     }
@@ -76,7 +76,7 @@ func GetAllProductsByProductType(w http.ResponseWriter, r *http.Request) {
     }
 
     var products []models.Product
-    query := database.DB.Where("product_type_id = ?", productType.ID)
+    query := database.DB.Where("product_type_id = ?", productType.ID).Preload("Images")
     query = paginate(r, query)
 
     if err := query.Find(&products).Error; err != nil {
@@ -100,7 +100,7 @@ func GetProductsByIDs(w http.ResponseWriter, r *http.Request) {
     log.Println("Product IDs:", requestBody.IDs)
 
     var products []models.Product
-    if err := database.DB.Where("id IN ?", requestBody.IDs).Find(&products).Error; err != nil {
+    if err := database.DB.Where("id IN ?", requestBody.IDs).Preload("Images").Find(&products).Error; err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
@@ -127,7 +127,20 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
         product.Stock = 0
     }
 
-    database.DB.Create(&product)
+    if err := database.DB.Create(&product).Error; err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    for _, image := range product.Images {
+        image.ProductID = product.ID
+        // Ensure the ID is not set manually
+        image.ID = 0
+        if err := database.DB.Create(&image).Error; err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+    }
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(product)
@@ -179,7 +192,27 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    database.DB.Save(&product)
+    if err := database.DB.Save(&product).Error; err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Delete existing images
+    if err := database.DB.Where("product_id = ?", product.ID).Delete(&models.ProductImage{}).Error; err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Add new images
+    for _, image := range product.Images {
+        image.ProductID = product.ID
+        // Ensure the ID is not set manually
+        image.ID = 0
+        if err := database.DB.Create(&image).Error; err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+    }
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(product)

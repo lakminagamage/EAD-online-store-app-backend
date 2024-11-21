@@ -225,6 +225,10 @@ func DeleteProduct(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Product not found", http.StatusNotFound)
         return
     }
+
+    // delete the images associated with the product
+    database.DB.Where("product_id = ?", product.ID).Delete(&models.ProductImage{})
+
     database.DB.Delete(&product)
     w.WriteHeader(http.StatusNoContent)
 }

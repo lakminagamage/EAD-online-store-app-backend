@@ -8,6 +8,9 @@ type Product struct {
     Description string `json:"description"`
     Price float64 `json:"price"`
     Stock int `json:"stock"`
+
     ProductTypeID uint `json:"product_type_id"`
     ProductType ProductType `json:"product_type"`
+    
+    Images []ProductImage `json:"images"`
 }

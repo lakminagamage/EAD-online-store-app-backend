@@ -29,7 +29,7 @@ func paginate(r *http.Request, query *gorm.DB) *gorm.DB {
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
     var products []models.Product
     query := paginate(r, database.DB)
-    if err := query.Find(&products).Error; err != nil {
+    if err := query.Preload("Images").Find(&products).Error; err != nil {
         log.Println("Error retrieving products:", err)
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -52,7 +52,7 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 func GetProductByID(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     var product models.Product
-    if err := database.DB.First(&product, params["id"]).Error; err != nil {
+    if err := database.DB.Preload("Images").First(&product, params["id"]).Error; err != nil {
         http.Error(w, "Product not found", http.StatusNotFound)
         return
     }
@@ -76,7 +76,7 @@ func GetAllProductsByProductType(w http.ResponseWriter, r *http.Request) {
     }
 
     var products []models.Product
-    query := database.DB.Where("product_type_id = ?", productType.ID)
+    query := database.DB.Where("product_type_id = ?", productType.ID).Preload("Images")
     query = paginate(r, query)
 
     if err := query.Find(&products).Error; err != nil {
@@ -100,7 +100,7 @@ func GetProductsByIDs(w http.ResponseWriter, r *http.Request) {
     log.Println("Product IDs:", requestBody.IDs)
 
     var products []models.Product
-    if err := database.DB.Where("id IN ?", requestBody.IDs).Find(&products).Error; err != nil {
+    if err := database.DB.Where("id IN ?", requestBody.IDs).Preload("Images").Find(&products).Error; err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
@@ -127,7 +127,20 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
         product.Stock = 0
     }
 
-    database.DB.Create(&product)
+    if err := database.DB.Create(&product).Error; err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    for _, image := range product.Images {
+        image.ProductID = product.ID
+        // Ensure the ID is not set manually
+        image.ID = 0
+        if err := database.DB.Create(&image).Error; err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+    }
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(product)
@@ -179,7 +192,27 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    database.DB.Save(&product)
+    if err := database.DB.Save(&product).Error; err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Delete existing images
+    if err := database.DB.Where("product_id = ?", product.ID).Delete(&models.ProductImage{}).Error; err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Add new images
+    for _, image := range product.Images {
+        image.ProductID = product.ID
+        // Ensure the ID is not set manually
+        image.ID = 0
+        if err := database.DB.Create(&image).Error; err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+    }
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(product)
@@ -192,6 +225,10 @@ func DeleteProduct(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Product not found", http.StatusNotFound)
         return
     }
+
+    // delete the images associated with the product
+    database.DB.Where("product_id = ?", product.ID).Delete(&models.ProductImage{})
+
     database.DB.Delete(&product)
     w.WriteHeader(http.StatusNoContent)
 }
@@ -243,4 +280,41 @@ func SearchProducts(w http.ResponseWriter, r *http.Request) {
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(products)
+}
+
+func GetAllProductTypes(w http.ResponseWriter, r *http.Request) {
+	var productTypes []models.ProductType
+	if err := database.DB.Find(&productTypes).Error; err != nil {
+		log.Println("Error retrieving product types:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(productTypes)
+}
+
+func CreateProductType(w http.ResponseWriter, r *http.Request) {
+	var productType models.ProductType
+	if err := json.NewDecoder(r.Body).Decode(&productType); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+	database.DB.Create(&productType)
+	json.NewEncoder(w).Encode(productType)
+}
+
+func DeleteProductType(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var productType models.ProductType
+	if err := database.DB.First(&productType, params["id"]).Error; err != nil {
+		http.Error(w, "Product type not found", http.StatusNotFound)
+		return
+	}
+
+	// delete the products associated with the product type
+	database.DB.Model(&productType).Association("Products").Clear()
+
+	database.DB.Delete(&productType)
+	json.NewEncoder(w).Encode(productType)
 }

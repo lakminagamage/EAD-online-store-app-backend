@@ -1,5 +1,5 @@
 # Build the app
-FROM node:14 AS build
+FROM node:18-alpine AS build
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # Run the app
-FROM node:14 AS runner
+FROM node:18-alpine AS runner
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install --production

@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api/users")
@@ -16,6 +18,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @GetMapping
+    public ResponseEntity<Page<UserDTO>> getAllUsers(Pageable pageable) {
+        Page<UserDTO> users = userService.getAllUsers(pageable);
+        return ResponseEntity.ok(users);
+    }
 
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody @Valid UserCreateDTO userCreateDTO) {
@@ -32,14 +40,14 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserByEmail(@RequestParam String email) {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
-  
+
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser( @PathVariable Long id, @RequestBody @Valid UserUpdateDTO userUpdateDTO){
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody @Valid UserUpdateDTO userUpdateDTO) {
         userUpdateDTO.setId(id);
         UserDTO updatedUser = userService.updateUser(userUpdateDTO);
         return ResponseEntity.ok(updatedUser);
     }
-  
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
         return ResponseEntity.ok(userService.deleteUserById(id));

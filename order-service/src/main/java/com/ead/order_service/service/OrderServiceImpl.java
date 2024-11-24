@@ -80,6 +80,9 @@ public class OrderServiceImpl implements OrderService {
         order.setUserId(orderDTO.getUserId());
         order.setStatus(orderDTO.getStatus());
 
+        if (orderDTO.getStatus() == null) {
+            order.setStatus("PENDING");
+        }
 
         List<OrderItem> orderItems = orderDTO.getItems().stream().map(itemDTO -> {
             OrderItem orderItem = new OrderItem();

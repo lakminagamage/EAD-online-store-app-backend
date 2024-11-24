@@ -27,7 +27,7 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderDTO> getAllOrders(){
         List<Order> orders = orderRepository.findAll();
 
-        // Map each Order to OrderDTO
+
         return orders.stream()
                 .map(order -> {
                     OrderDTO orderDTO = new OrderDTO();
@@ -35,7 +35,7 @@ public class OrderServiceImpl implements OrderService {
                     orderDTO.setUserId(order.getUserId());
                     orderDTO.setStatus(order.getStatus());
 
-                    // Map orderItems to OrderItemDTOs
+
                     List<OrderItemDTO> items = order.getOrderItems().stream().map(orderItem -> {
                         OrderItemDTO itemDTO = new OrderItemDTO();
                         itemDTO.setProductId(orderItem.getProductId());
@@ -55,13 +55,13 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        // Map Order to OrderDTO
+
         OrderDTO orderDTO = new OrderDTO();
         orderDTO.setId(order.getId());
         orderDTO.setUserId(order.getUserId());
         orderDTO.setStatus(order.getStatus());
 
-        // Map orderItems to OrderItemDTOs
+
         List<OrderItemDTO> items = order.getOrderItems().stream().map(orderItem -> {
             OrderItemDTO itemDTO = new OrderItemDTO();
             itemDTO.setProductId(orderItem.getProductId());
@@ -80,29 +80,29 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = new Order();
         order.setUserId(orderDTO.getUserId());
+        order.setStatus(orderDTO.getStatus());
 
 
-        // Map items
         List<OrderItem> orderItems = orderDTO.getItems().stream().map(itemDTO -> {
             OrderItem orderItem = new OrderItem();
             orderItem.setProductId(itemDTO.getProductId());
             orderItem.setQuantity(itemDTO.getQuantity());
             orderItem.setPrice(itemDTO.getPrice());
-            orderItem.setOrder(order); // Set the parent order
+            orderItem.setOrder(order);
             return orderItem;
         }).collect(Collectors.toList());
 
         order.setOrderItems(orderItems);
         Order savedOrder = orderRepository.save(order);
 
-        // Map Order back to OrderDTO
+
         OrderDTO responseDTO = new OrderDTO();
         responseDTO.setId(savedOrder.getId());
         responseDTO.setUserId(savedOrder.getUserId());
         responseDTO.setStatus(savedOrder.getStatus() );
 
 
-        // Map OrderItems back to OrderItemDTOs
+
         responseDTO.setItems(savedOrder.getOrderItems().stream().map(orderItem -> {
             OrderItemDTO itemDTO = new OrderItemDTO();
             itemDTO.setProductId(orderItem.getProductId());

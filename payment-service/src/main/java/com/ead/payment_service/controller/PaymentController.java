@@ -30,6 +30,12 @@ public class PaymentController {
         return ResponseEntity.ok(payment);
     }
 
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<PaymentDTO> getPaymentByOrderId(@PathVariable Long orderId) {
+        PaymentDTO payment = paymentService.getPaymentByOrderId(orderId);
+        return ResponseEntity.ok(payment);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<PaymentDTO> updatePayment(@PathVariable Long id, @RequestBody @Valid PaymentUpdateDTO paymentUpdateDTO) {
         paymentUpdateDTO.setPaymentId(id);

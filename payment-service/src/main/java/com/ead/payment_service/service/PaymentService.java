@@ -23,6 +23,7 @@ public class PaymentService {
     public PaymentDTO createPayment(PaymentCreateDTO paymentCreateDTO) {
         Payment payment = new Payment();
         payment.setPaymentType(paymentCreateDTO.getPaymentType());
+        payment.setOrderId(paymentCreateDTO.getOrderId());
         payment.setCreatedAt(LocalDateTime.now());
         payment.setUpdatedAt(LocalDateTime.now());
 
@@ -41,9 +42,16 @@ public class PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
 
         payment.setPaymentType(paymentUpdateDTO.getPaymentType());
+        payment.setOrderId(paymentUpdateDTO.getOrderId());
         payment.setUpdatedAt(LocalDateTime.now());
 
         payment = paymentRepository.save(payment);
+        return mapToPaymentDTO(payment);
+    }
+
+    public PaymentDTO getPaymentByOrderId(Long orderId) {
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
         return mapToPaymentDTO(payment);
     }
 

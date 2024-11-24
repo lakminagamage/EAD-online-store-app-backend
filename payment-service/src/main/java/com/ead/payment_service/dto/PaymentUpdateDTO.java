@@ -6,4 +6,5 @@ import lombok.Data;
 public class PaymentUpdateDTO {
     private Long paymentId;
     private String paymentType;
+    private Long orderId;
 }

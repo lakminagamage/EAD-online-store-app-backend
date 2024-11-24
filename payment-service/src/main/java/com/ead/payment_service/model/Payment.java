@@ -27,6 +27,9 @@ public class Payment {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false)
+    private Long orderId;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

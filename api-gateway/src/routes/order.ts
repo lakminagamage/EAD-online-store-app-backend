@@ -19,19 +19,11 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(400).json({ message: "Request body is missing" });
-    }
-    console.log("Request Body:", req.body);
-    const response = await axios.post(
-      `${config.orderServiceUrl}/orders`,
-      req.body,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await axios.post(`${config.orderServiceUrl}/orders`, {
+      userId: req.body.userId,
+      status: req.body.status,
+      items: req.body.items,
+    });
     res.status(response.status).json(response.data);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {

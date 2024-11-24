@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @RestController
+@RequestMapping("/orders")
 public class OrderController extends AbstractController{
 
     @Autowired
@@ -15,6 +16,7 @@ public class OrderController extends AbstractController{
 
     @PostMapping
     public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
+        System.out.println("OrderDTO: " + orderDTO);
         if (orderDTO.getItems() == null || orderDTO.getItems().isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }

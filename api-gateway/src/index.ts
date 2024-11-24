@@ -7,6 +7,7 @@ import ordersRoutes from "./routes/order";
 const app = express();
 
 app.use(cors());
+app.use(express.json());
 
 app.use("/api/products", productsRoutes);
 app.use("/api/users", usersRoutes);

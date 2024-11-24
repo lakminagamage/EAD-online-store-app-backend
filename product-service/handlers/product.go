@@ -144,23 +144,9 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    if product.Stock == 0 {
-        product.Stock = 0
-    }
-
     if err := database.DB.Create(&product).Error; err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
-    }
-
-    for _, image := range product.Images {
-        image.ProductID = product.ID
-        // Ensure the ID is not set manually
-        image.ID = 0
-        if err := database.DB.Create(&image).Error; err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
     }
 
     w.Header().Set("Content-Type", "application/json")

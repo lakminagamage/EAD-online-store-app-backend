@@ -44,9 +44,16 @@ func GetAllProducts(w http.ResponseWriter, r *http.Request) {
         }
         products[i].ProductType = productType
     }
-    
+
+    total := int64(len(products))
+
+    response := map[string]interface{}{
+        "total": total,
+        "data": products,
+    }
+
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(products)
+    json.NewEncoder(w).Encode(response)
 }
 
 func GetProductByID(w http.ResponseWriter, r *http.Request) {
@@ -84,8 +91,15 @@ func GetAllProductsByProductType(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    total := int64(len(products))
+
+    response := map[string]interface{}{
+        "total": total,
+        "data": products,
+    }
+
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(products)
+    json.NewEncoder(w).Encode(response)
 }
 
 func GetProductsByIDs(w http.ResponseWriter, r *http.Request) {
@@ -105,8 +119,15 @@ func GetProductsByIDs(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    total := int64(len(products))
+
+    response := map[string]interface{}{
+        "total": total,
+        "data": products,
+    }
+
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(products)
+    json.NewEncoder(w).Encode(response)
 }
 
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
@@ -278,8 +299,15 @@ func SearchProducts(w http.ResponseWriter, r *http.Request) {
     //     products[i].ProductType = productType
     // }
 
+    total := int64(len(products))
+
+    response := map[string]interface{}{
+        "total": total,
+        "data": products,
+    }
+
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(products)
+    json.NewEncoder(w).Encode(response)
 }
 
 func GetAllProductTypes(w http.ResponseWriter, r *http.Request) {

@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Proxy for Product-related routes
 router.use(
-  "/products",
+  "/",
   createProxyMiddleware({
     target: config.productServiceUrl,
     changeOrigin: true,

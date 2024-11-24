@@ -120,4 +120,13 @@ public class OrderServiceImpl implements OrderService {
         }
         orderRepository.deleteById(orderId);
     }
+
+    @Override
+    public void updatePaymentStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        order.setStatus(status);
+        orderRepository.save(order);
+        logger.info("Updated payment status for order id: {} to status: {}", orderId, status);
+    }
 }

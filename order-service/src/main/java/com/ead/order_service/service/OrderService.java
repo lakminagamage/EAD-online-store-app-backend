@@ -7,4 +7,5 @@ public interface OrderService {
     void deleteOrder(Long orderId);
     OrderDTO getOrderById(Long orderId);
     List<OrderDTO> getAllOrders();
+    void updatePaymentStatus(Long orderId, String status);
 }

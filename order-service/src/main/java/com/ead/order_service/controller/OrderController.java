@@ -40,4 +40,10 @@ public class OrderController extends AbstractController{
         return successResponse(orders, HttpStatus.OK);
     }
 
+    @PatchMapping("/{orderId}/payment-status")
+    public ResponseEntity<Void> updatePaymentStatus(@PathVariable Long orderId, @RequestParam String status) {
+        orderService.updatePaymentStatus(orderId, status);
+        return noContentResponse();
+    }
+
 }

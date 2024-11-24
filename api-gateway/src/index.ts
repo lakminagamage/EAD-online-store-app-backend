@@ -1,8 +1,11 @@
 import express from "express";
 import productsRoutes from "./routes/product";
 import usersRoutes from "./routes/user";
+import cors from "cors";
 
 const app = express();
+
+app.use(cors());
 
 // Use the products router for any `/api/products` routes
 app.use("/api/products", productsRoutes);

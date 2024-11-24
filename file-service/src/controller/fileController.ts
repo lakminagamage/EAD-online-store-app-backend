@@ -19,6 +19,7 @@ export const uploadImage = [
         metadata: {
           contentType: file.mimetype,
         },
+        predefinedAcl: "publicRead", // Add this line to set public access
       });
 
       blobStream.on("error", (err) => {

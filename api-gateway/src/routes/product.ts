@@ -25,7 +25,11 @@ router.post(
 
       const formData = new FormData();
       files.forEach((file) => {
-        formData.append("files", file.buffer, file.originalname);
+        formData.append(
+          "files",
+          file.buffer,
+          file.originalname.replace(/\s/g, "_")
+        );
       });
 
       const uploadResponse = await axios.post(
@@ -51,12 +55,22 @@ router.post(
         images: imageUrls,
       };
 
-      const productResponse = await axios.post(
-        `${config.productServiceUrl}/products/`,
-        productData
-      );
+      try {
+        // send to the product service to create the product
+        const productResponse = await axios.post(
+          `${config.productServiceUrl}/products/`,
+          productData
+        );
 
-      res.status(productResponse.status).json(productResponse.data);
+        res.status(productResponse.status).json(productResponse.data);
+      } catch (productError) {
+        // if product creation fails, delete the uploaded from the file service
+        await axios.delete(`${config.fileServiceUrl}/files/delete/multiple`, {
+          data: { files: imageUrls.map((image: { url: any }) => image.url) },
+        });
+
+        throw productError;
+      }
     } catch (error) {
       console.error("Error creating product:", error);
       res.status(500).json({ message: "Internal server error" });

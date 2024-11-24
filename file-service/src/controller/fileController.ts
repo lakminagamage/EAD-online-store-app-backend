@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import bucket from "../config/firebase";
 import multer from "multer";
+import { v4 as uuidv4 } from "uuid"; // Add this line to import uuid
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -19,7 +20,8 @@ export const uploadFile = [
       }
 
       const file = req.file;
-      const blob = bucket.file(file.originalname);
+      const uniqueName = `${uuidv4()}_${file.originalname}`;
+      const blob = bucket.file(uniqueName);
       const blobStream = blob.createWriteStream({
         metadata: {
           contentType: file.mimetype,
@@ -61,7 +63,10 @@ export const UploadMultipleFiles = [
       const urls: string[] = [];
 
       for (const file of files) {
-        const blob = bucket.file(file.originalname);
+        // Generate unique name and hash the file name
+        const uniqueName = `${uuidv4()}_${file.originalname}`;
+        const blob = bucket.file(uniqueName);
+
         const blobStream = blob.createWriteStream({
           metadata: {
             contentType: file.mimetype,
@@ -76,6 +81,8 @@ export const UploadMultipleFiles = [
         blobStream.on("finish", async () => {
           const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
           urls.push(publicUrl);
+
+          console.log(publicUrl);
 
           if (urls.length === files.length) {
             res.status(200).json({ urls });
@@ -123,4 +130,87 @@ export const downloadFile = async (
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });
   }
+};
+
+export const deleteMultipleFiles = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  if (req.method !== "DELETE") {
+    res.status(400).json({ message: "Method not allowed" });
+    return;
+  }
+
+  if (!req.body.files) {
+    res.status(400).json({ message: "Files are required" });
+    return;
+  }
+
+  const files = req.body.files as string[];
+
+  if (files.length === 0) {
+    res.status(400).json({ message: "No files to delete" });
+    return;
+  }
+
+  try {
+    for (const file of files) {
+      const fileName = removePublicUrl(file);
+      const blob = bucket.file(fileName);
+      const [exists] = await blob.exists();
+
+      if (!exists) {
+        res.status(404).json({ message: "File not found" });
+        return; // Add return to stop further execution
+      }
+
+      await blob.delete();
+    }
+
+    res.status(200).json({ message: "Files deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
+
+export const deleteFile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  if (req.method !== "DELETE") {
+    res.status(400).json({ message: "Method not allowed" });
+    return;
+  }
+
+  if (!req.query.fileName) {
+    res.status(400).json({ message: "File name is required" });
+    return;
+  }
+
+  const fileName = removePublicUrl(req.query.fileName as string);
+
+  if (!fileName) {
+    res.status(400).json({ message: "File name is required" });
+    return;
+  }
+
+  try {
+    const file = bucket.file(fileName as string); // Type assertion to string
+    const [exists] = await file.exists();
+
+    if (!exists) {
+      res.status(404).json({ message: "File not found" });
+      return; // Add return to stop further execution
+    }
+
+    await file.delete();
+    res.status(200).json({ message: "File deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+};
+
+const removePublicUrl = (url: string): string => {
+  const parts = url.split("/");
+  return parts[parts.length - 1];
 };

@@ -7,7 +7,6 @@ import com.ead.order_service.repository.OrderRepository;
 import com.ead.order_service.exception.OrderNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.modelmapper.ModelMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.List;
@@ -20,7 +19,6 @@ public class OrderServiceImpl implements OrderService {
     private OrderRepository orderRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
     private static final Logger logger = LogManager.getLogger(OrderServiceImpl.class);
 
     @Override

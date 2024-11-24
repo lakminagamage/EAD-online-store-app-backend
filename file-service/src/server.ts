@@ -1,13 +1,12 @@
-import express from "express";
-import bodyParser from "body-parser";
-import fileRoutes from "./routes/file.routes";
+import express, { Application } from "express";
+import fileroutes from "./routes/fileroutes";
 
-const app = express();
+const app: Application = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
-app.use("/files", fileRoutes);
+app.use(express.json());
+app.use("/files", fileroutes);
 
 app.listen(PORT, () => {
-  console.log(`File Service is running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

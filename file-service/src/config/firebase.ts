@@ -1,13 +1,12 @@
 import admin from "firebase-admin";
-import { ServiceAccount } from "firebase-admin";
+import path from "path";
 
-const serviceAccount: ServiceAccount = require("../../path/to/your-firebase-credentials.json");
+const serviceAccount = require(path.resolve("firebase-service-account.json"));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "your-project-id.appspot.com",
+  storageBucket: "gs://hypercube-cf9d2.firebasestorage.app",
 });
 
 const bucket = admin.storage().bucket();
-
-export { bucket };
+export default bucket;

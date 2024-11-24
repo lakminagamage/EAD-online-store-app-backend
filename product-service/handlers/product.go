@@ -161,19 +161,24 @@ func UpdateStock(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    new_stock := r.URL.Query().Get("stock")
-    if new_stock == "" {
+    required_quantity := r.URL.Query().Get("request_quantity")
+    if required_quantity == "" {
         http.Error(w, "Stock is required", http.StatusBadRequest)
         return
     }
     
-    new_stock_int, err := strconv.Atoi(new_stock)
+    required_quantity_int, err := strconv.Atoi(required_quantity)
     if err != nil {
-        http.Error(w, "Invalid stock", http.StatusBadRequest)
+        http.Error(w, "Invalid quantity", http.StatusBadRequest)
         return
     }
 
-    product.Stock = new_stock_int
+    if required_quantity_int > product.Stock {
+        http.Error(w, "Insufficient stock", http.StatusBadRequest)
+        return
+    }
+
+    product.Stock -= required_quantity_int
     database.DB.Save(&product)
 
     w.Header().Set("Content-Type", "application/json")

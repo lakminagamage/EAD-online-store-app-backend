@@ -49,81 +49,73 @@ const createOrUpdateProduct = async (
   }
 };
 
-router.post(
-  "/files",
-  upload.array("images"),
-  async (req, res): Promise<void> => {
-    try {
-      const files = req.files as Express.Multer.File[];
-      if (!files || files.length === 0) {
-        res.status(400).json({ message: "No images uploaded" });
-        return;
-      }
+router.post("/", upload.array("images"), async (req, res): Promise<void> => {
+  try {
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      res.status(400).json({ message: "No images uploaded" });
+      return;
+    }
 
-      const imageUrls = await uploadFiles(files);
+    const imageUrls = await uploadFiles(files);
 
-      const productData = {
-        name: req.body.name,
-        description: req.body.description,
-        price: parseFloat(req.body.price),
-        stock: parseInt(req.body.stock),
-        product_type_id: parseInt(req.body.product_type_id),
-        images: imageUrls,
-      };
+    const productData = {
+      name: req.body.name,
+      description: req.body.description,
+      price: parseFloat(req.body.price),
+      stock: parseInt(req.body.stock),
+      product_type_id: parseInt(req.body.product_type_id),
+      images: imageUrls,
+    };
 
-      const productResponse = await createOrUpdateProduct("POST", productData);
+    const productResponse = await createOrUpdateProduct("POST", productData);
 
-      if (productResponse) {
-        res.status(productResponse.status).json(productResponse.data);
-      } else {
-        res.status(500).json({ message: "Internal server error" });
-      }
-    } catch (error) {
-      console.error("Error creating product:", error);
+    if (productResponse) {
+      res.status(productResponse.status).json(productResponse.data);
+    } else {
       res.status(500).json({ message: "Internal server error" });
     }
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-);
+});
 
-router.put(
-  "/files/:id",
-  upload.array("images"),
-  async (req, res): Promise<void> => {
-    try {
-      const files = req.files as Express.Multer.File[];
-      if (!files || files.length === 0) {
-        res.status(400).json({ message: "No images uploaded" });
-        return;
-      }
+router.put("/:id", upload.array("images"), async (req, res): Promise<void> => {
+  try {
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      res.status(400).json({ message: "No images uploaded" });
+      return;
+    }
 
-      const imageUrls = await uploadFiles(files);
+    const imageUrls = await uploadFiles(files);
 
-      const productData = {
-        name: req.body.name,
-        description: req.body.description,
-        price: parseFloat(req.body.price),
-        stock: parseInt(req.body.stock),
-        product_type_id: parseInt(req.body.product_type_id),
-        images: imageUrls,
-      };
+    const productData = {
+      name: req.body.name,
+      description: req.body.description,
+      price: parseFloat(req.body.price),
+      stock: parseInt(req.body.stock),
+      product_type_id: parseInt(req.body.product_type_id),
+      images: imageUrls,
+    };
 
-      const productResponse = await createOrUpdateProduct(
-        "PUT",
-        productData,
-        req.params.id
-      );
+    const productResponse = await createOrUpdateProduct(
+      "PUT",
+      productData,
+      req.params.id
+    );
 
-      if (productResponse) {
-        res.status(productResponse.status).json(productResponse.data);
-      } else {
-        res.status(500).json({ message: "Internal server error" });
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
+    if (productResponse) {
+      res.status(productResponse.status).json(productResponse.data);
+    } else {
       res.status(500).json({ message: "Internal server error" });
     }
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-);
+});
 
 // Proxy for Product-related routes
 router.use(

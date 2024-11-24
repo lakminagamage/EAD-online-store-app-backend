@@ -8,43 +8,59 @@ import FormData from "form-data";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+const uploadFiles = async (files: Express.Multer.File[]) => {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append(
+      "files",
+      file.buffer,
+      file.originalname.replace(/\s/g, "_")
+    );
+  });
+
+  const uploadResponse = await axios.post(
+    `${config.fileServiceUrl}/files/upload/multiple`,
+    formData,
+    {
+      headers: {
+        ...formData.getHeaders(),
+      },
+    }
+  );
+
+  return uploadResponse.data.urls.map((url: string) => ({ url }));
+};
+
+const createOrUpdateProduct = async (
+  method: string,
+  productData: any,
+  productId?: string
+) => {
+  if (method === "POST") {
+    return await axios.post(
+      `${config.productServiceUrl}/products/`,
+      productData
+    );
+  } else if (method === "PUT" && productId) {
+    return await axios.put(
+      `${config.productServiceUrl}/products/${productId}`,
+      productData
+    );
+  }
+};
+
 router.post(
   "/files",
   upload.array("images"),
   async (req, res): Promise<void> => {
     try {
-      if (req.method !== "POST") {
-        res.status(400).json({ message: "Method not allowed" });
-        return;
-      }
-
       const files = req.files as Express.Multer.File[];
       if (!files || files.length === 0) {
         res.status(400).json({ message: "No images uploaded" });
+        return;
       }
 
-      const formData = new FormData();
-      files.forEach((file) => {
-        formData.append(
-          "files",
-          file.buffer,
-          file.originalname.replace(/\s/g, "_")
-        );
-      });
-
-      const uploadResponse = await axios.post(
-        `${config.fileServiceUrl}/files/upload/multiple`,
-        formData,
-        {
-          headers: {
-            ...formData.getHeaders(),
-          },
-        }
-      );
-
-      const imageUrls = uploadResponse.data.urls.map((url: string) => ({
-        url,
-      }));
+      const imageUrls = await uploadFiles(files);
 
       const productData = {
         name: req.body.name,
@@ -55,27 +71,57 @@ router.post(
         images: imageUrls,
       };
 
-      try {
-        // send to the product service to create the product
-        const productResponse = await axios.post(
-          `${config.productServiceUrl}/products/`,
-          productData
-        );
+      const productResponse = await createOrUpdateProduct("POST", productData);
 
+      if (productResponse) {
         res.status(productResponse.status).json(productResponse.data);
-      } catch (productError) {
-        // if product creation fails, delete the uploaded from the file service
-        await axios.delete(`${config.fileServiceUrl}/files/delete/multiple`, {
-          data: { files: imageUrls.map((image: { url: any }) => image.url) },
-        });
-
-        throw productError;
+      } else {
+        res.status(500).json({ message: "Internal server error" });
       }
     } catch (error) {
       console.error("Error creating product:", error);
       res.status(500).json({ message: "Internal server error" });
     }
-    return;
+  }
+);
+
+router.put(
+  "/files/:id",
+  upload.array("images"),
+  async (req, res): Promise<void> => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        res.status(400).json({ message: "No images uploaded" });
+        return;
+      }
+
+      const imageUrls = await uploadFiles(files);
+
+      const productData = {
+        name: req.body.name,
+        description: req.body.description,
+        price: parseFloat(req.body.price),
+        stock: parseInt(req.body.stock),
+        product_type_id: parseInt(req.body.product_type_id),
+        images: imageUrls,
+      };
+
+      const productResponse = await createOrUpdateProduct(
+        "PUT",
+        productData,
+        req.params.id
+      );
+
+      if (productResponse) {
+        res.status(productResponse.status).json(productResponse.data);
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 );
 

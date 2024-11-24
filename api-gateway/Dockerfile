@@ -1,23 +1,16 @@
-# Use the official Node.js image as the base image
-FROM node:14
-
-# Set the working directory inside the container
+# Build the app
+FROM node:14 AS build
 WORKDIR /usr/src/app
-
-# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
-
-# Copy the rest of the application code to the working directory
 COPY . .
-
-# Compile TypeScript to JavaScript
 RUN npm run build
 
-# Expose the port the app runs on
+# Run the app
+FROM node:14 AS runner
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install --production
+COPY --from=build /usr/src/app/dist ./dist
 EXPOSE 8080
-
-# Command to run the application
-CMD ["npm", "run", "dev"]
+CMD ["node", "dist/index.js"]

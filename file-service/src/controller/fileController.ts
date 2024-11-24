@@ -1,8 +1,12 @@
 import { Request, Response } from "express";
-import bucket from "../config/firebase"
+import bucket from "../config/firebase";
 
-export const uploadImage = async (req: Request, res: Response): Promise<void> => {
+export const uploadImage = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
+    console.log(req.file);
     if (!req.file) {
       res.status(400).json({ message: "No file uploaded" });
       return;
@@ -30,6 +34,7 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: (err as Error).message });
   }
 };
+
 export const downloadImage = async (req: Request, res: Response) => {
   const { fileName } = req.params;
 

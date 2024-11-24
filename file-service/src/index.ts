@@ -2,7 +2,7 @@ import express, { Application } from "express";
 import fileroutes from "./routes/fileroutes";
 
 const app: Application = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8085;
 
 app.use(express.json());
 app.use("/files", fileroutes);

@@ -9,8 +9,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.apache.hc.client5.http.classic.methods.HttpPatch;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -21,10 +29,75 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private static final Logger logger = LogManager.getLogger(OrderServiceImpl.class);
 
+    @Value("${api.gateway.url}")
+    private String apiGatewayUrl;
+
+    @Override
+    @Transactional
+    public OrderDTO createOrder(OrderDTO orderDTO) {
+        logger.info("Creating order for userId: {}", orderDTO.getUserId());
+
+        Order order = new Order();
+        order.setUserId(orderDTO.getUserId());
+        order.setStatus(orderDTO.getStatus() != null ? orderDTO.getStatus() : "PENDING");
+
+        List<OrderItem> orderItems = orderDTO.getItems().stream().map(itemDTO -> {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProductId(itemDTO.getProductId());
+            orderItem.setQuantity(itemDTO.getQuantity());
+            orderItem.setPrice(itemDTO.getPrice());
+            orderItem.setOrder(order);
+            return orderItem;
+        }).collect(Collectors.toList());
+
+        order.setOrderItems(orderItems);
+        Order savedOrder = orderRepository.save(order);
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            for (OrderItem item : orderItems) {
+                String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/products/" + item.getProductId() + "/stock")
+                        .queryParam("request_quantity", item.getQuantity())
+                        .toUriString();
+
+                logger.info("Requesting URL: {} to update stock for product id: {}", urlString, item.getProductId());
+
+                HttpPatch httpPatch = new HttpPatch(urlString);
+                httpPatch.setEntity(new StringEntity(""));
+
+                try (var response = httpClient.execute(httpPatch)) {
+                    int responseCode = response.getCode();
+                    logger.info("Response status code: {}", responseCode);
+
+                    if (responseCode != HttpStatus.OK.value() && responseCode != HttpStatus.NO_CONTENT.value()) {
+                        throw new RuntimeException("Failed to update stock for product id: " + item.getProductId());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to update stock, rolling back order creation", e);
+            orderRepository.delete(savedOrder);
+            throw new RuntimeException("Order creation failed due to stock update failure");
+        }
+
+        OrderDTO responseDTO = new OrderDTO();
+        responseDTO.setId(savedOrder.getId());
+        responseDTO.setUserId(savedOrder.getUserId());
+        responseDTO.setStatus(savedOrder.getStatus());
+        responseDTO.setItems(savedOrder.getOrderItems().stream().map(orderItem -> {
+            OrderItemDTO itemDTO = new OrderItemDTO();
+            itemDTO.setProductId(orderItem.getProductId());
+            itemDTO.setQuantity(orderItem.getQuantity());
+            itemDTO.setPrice(orderItem.getPrice());
+            return itemDTO;
+        }).collect(Collectors.toList()));
+
+        logger.info("Order created successfully with id: {}", savedOrder.getId());
+        return responseDTO;
+    }
+
     @Override
     public List<OrderDTO> getAllOrders(){
         List<Order> orders = orderRepository.findAll();
-
 
         return orders.stream()
                 .map(order -> {
@@ -32,7 +105,6 @@ public class OrderServiceImpl implements OrderService {
                     orderDTO.setId(order.getId());
                     orderDTO.setUserId(order.getUserId());
                     orderDTO.setStatus(order.getStatus());
-
 
                     List<OrderItemDTO> items = order.getOrderItems().stream().map(orderItem -> {
                         OrderItemDTO itemDTO = new OrderItemDTO();
@@ -53,12 +125,10 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-
         OrderDTO orderDTO = new OrderDTO();
         orderDTO.setId(order.getId());
         orderDTO.setUserId(order.getUserId());
         orderDTO.setStatus(order.getStatus());
-
 
         List<OrderItemDTO> items = order.getOrderItems().stream().map(orderItem -> {
             OrderItemDTO itemDTO = new OrderItemDTO();
@@ -70,50 +140,6 @@ public class OrderServiceImpl implements OrderService {
 
         orderDTO.setItems(items);
         return orderDTO;
-    }
-
-    @Override
-    public OrderDTO createOrder(OrderDTO orderDTO) {
-        logger.info("Creating order for userId: {}", orderDTO.getUserId());
-
-        Order order = new Order();
-        order.setUserId(orderDTO.getUserId());
-        order.setStatus(orderDTO.getStatus());
-
-        if (orderDTO.getStatus() == null) {
-            order.setStatus("PENDING");
-        }
-
-        List<OrderItem> orderItems = orderDTO.getItems().stream().map(itemDTO -> {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setProductId(itemDTO.getProductId());
-            orderItem.setQuantity(itemDTO.getQuantity());
-            orderItem.setPrice(itemDTO.getPrice());
-            orderItem.setOrder(order);
-            return orderItem;
-        }).collect(Collectors.toList());
-
-        order.setOrderItems(orderItems);
-        Order savedOrder = orderRepository.save(order);
-
-
-        OrderDTO responseDTO = new OrderDTO();
-        responseDTO.setId(savedOrder.getId());
-        responseDTO.setUserId(savedOrder.getUserId());
-        responseDTO.setStatus(savedOrder.getStatus() );
-
-
-
-        responseDTO.setItems(savedOrder.getOrderItems().stream().map(orderItem -> {
-            OrderItemDTO itemDTO = new OrderItemDTO();
-            itemDTO.setProductId(orderItem.getProductId());
-            itemDTO.setQuantity(orderItem.getQuantity());
-            itemDTO.setPrice(orderItem.getPrice());
-            return itemDTO;
-        }).collect(Collectors.toList()));
-
-        logger.info("Order created successfully with id: {}", savedOrder.getId());
-        return responseDTO;
     }
 
     @Override

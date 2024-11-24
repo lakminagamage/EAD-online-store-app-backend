@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-@RequestMapping("api/v1/orders")
+@RequestMapping("orders")
 public class AbstractController {
     protected <T> ResponseEntity<T> successResponse(T data, HttpStatus status) {
         return new ResponseEntity<>(data, status);

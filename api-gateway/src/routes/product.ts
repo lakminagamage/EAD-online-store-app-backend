@@ -37,11 +37,15 @@ const createOrUpdateProduct = async (
   productId?: string
 ) => {
   if (method === "POST") {
+    console.log(`Proxying request to: ${config.productServiceUrl}/products/`);
     return await axios.post(
       `${config.productServiceUrl}/products/`,
       productData
     );
   } else if (method === "PUT" && productId) {
+    console.log(
+      `Proxying request to: ${config.productServiceUrl}/products/${productId}`
+    );
     return await axios.put(
       `${config.productServiceUrl}/products/${productId}`,
       productData

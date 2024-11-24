@@ -1,9 +1,14 @@
 import { Router } from "express";
-import { uploadFile, downloadFile } from "../controller/fileController";
+import {
+  uploadFile,
+  downloadFile,
+  UploadMultipleFiles,
+} from "../controller/fileController";
 
 const router = Router();
 
 router.post("/upload", uploadFile);
-router.post("/download", downloadFile); // Changed from GET to POST
+router.post("/upload/multiple", UploadMultipleFiles);
+router.post("/download", downloadFile);
 
 export default router;

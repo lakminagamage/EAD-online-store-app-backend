@@ -43,6 +43,53 @@ export const uploadFile = [
   },
 ];
 
+export const UploadMultipleFiles = [
+  upload.array("files"),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      if (req.method !== "POST") {
+        res.status(400).json({ message: "Method not allowed" });
+        return;
+      }
+
+      if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
+        res.status(400).json({ message: "No files uploaded" });
+        return;
+      }
+
+      const files = req.files as Express.Multer.File[];
+      const urls: string[] = [];
+
+      for (const file of files) {
+        const blob = bucket.file(file.originalname);
+        const blobStream = blob.createWriteStream({
+          metadata: {
+            contentType: file.mimetype,
+          },
+          predefinedAcl: "publicRead",
+        });
+
+        blobStream.on("error", (err) => {
+          res.status(500).json({ error: err.message });
+        });
+
+        blobStream.on("finish", async () => {
+          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+          urls.push(publicUrl);
+
+          if (urls.length === files.length) {
+            res.status(200).json({ urls });
+          }
+        });
+
+        blobStream.end(file.buffer);
+      }
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
+    }
+  },
+];
+
 export const downloadFile = async (
   req: Request,
   res: Response

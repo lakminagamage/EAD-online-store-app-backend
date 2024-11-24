@@ -28,4 +28,4 @@ replay_pid*
 
 .vscode/
 .idea/
-file-service/firebase-service-account.json
+/file-service/firebase-service-account.json

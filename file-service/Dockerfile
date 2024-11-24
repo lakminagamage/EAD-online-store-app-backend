@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # Run the app
-FROM node:18-alpine AS runner
+FROM node:18 AS runner
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install --production

@@ -6,6 +6,8 @@ import com.ead.user_service.dto.UserDTO;
 import com.ead.user_service.model.User;
 import com.ead.user_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,11 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    public Page<UserDTO> getAllUsers(Pageable pageable) {
+        Page<User> users = userRepository.findAll(pageable);
+        return users.map(this::mapToUserDTO);
+    }
 
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
         User user = new User();

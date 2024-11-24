@@ -15,10 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.apache.hc.client5.http.classic.methods.HttpPatch;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.io.entity.StringEntity;
+import com.ead.order_service.helper.RequestHelper;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -53,7 +50,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderItems(orderItems);
         Order savedOrder = orderRepository.save(order);
 
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+        try {
             for (OrderItem item : orderItems) {
                 String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/products/" + item.getProductId() + "/stock")
                         .queryParam("request_quantity", item.getQuantity())
@@ -61,16 +58,10 @@ public class OrderServiceImpl implements OrderService {
 
                 logger.info("Requesting URL: {} to update stock for product id: {}", urlString, item.getProductId());
 
-                HttpPatch httpPatch = new HttpPatch(urlString);
-                httpPatch.setEntity(new StringEntity(""));
-
-                try (var response = httpClient.execute(httpPatch)) {
-                    int responseCode = response.getCode();
-                    logger.info("Response status code: {}", responseCode);
-
-                    if (responseCode != HttpStatus.OK.value() && responseCode != HttpStatus.NO_CONTENT.value()) {
-                        throw new RuntimeException("Failed to update stock for product id: " + item.getProductId());
-                    }
+                int responseCode = RequestHelper.SendPatchRequest(urlString, "");
+                
+                if (responseCode != HttpStatus.OK.value() && responseCode != HttpStatus.NO_CONTENT.value()) {
+                    throw new RuntimeException("Failed to update stock for product id: " + item.getProductId());
                 }
             }
         } catch (Exception e) {

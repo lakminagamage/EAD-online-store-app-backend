@@ -3,6 +3,7 @@ import productsRoutes from "./routes/product";
 import usersRoutes from "./routes/user";
 import cors from "cors";
 import ordersRoutes from "./routes/order";
+import paymentRoutes from "./routes/payment";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use("/api/products", productsRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/orders", ordersRoutes);
+app.use("/api/payments", paymentRoutes);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

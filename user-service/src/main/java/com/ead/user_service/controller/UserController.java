@@ -19,12 +19,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping
-    public ResponseEntity<Page<UserDTO>> getAllUsers(Pageable pageable) {
-        Page<UserDTO> users = userService.getAllUsers(pageable);
-        return ResponseEntity.ok(users);
-    }
-
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody @Valid UserCreateDTO userCreateDTO) {
         UserDTO user = userService.createUser(userCreateDTO);
@@ -51,5 +45,11 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
         return ResponseEntity.ok(userService.deleteUserById(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<UserDTO>> getAllUsers(Pageable pageable) {
+        Page<UserDTO> users = userService.getAllUsers(pageable);
+        return ResponseEntity.ok(users);
     }
 }

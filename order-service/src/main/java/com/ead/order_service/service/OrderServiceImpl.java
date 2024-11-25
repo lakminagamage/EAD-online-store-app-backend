@@ -54,6 +54,33 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    private int getProductStock(Long productId) throws RequestFailedException {
+        String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/products/" + productId + "/stock")
+                .toUriString();
+
+        logger.info("Requesting URL: {} to get stock for product id: {}", urlString, productId);
+
+        CloseableHttpResponse response = RequestHelper.SendGetRequest(urlString);
+
+        if (response.getCode() != HttpStatus.OK.value()) {
+            throw new RuntimeException("Failed to get stock for product id: " + productId);
+        }
+        
+        try {
+            String responseBody = EntityUtils.toString(response.getEntity());
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonResponse = objectMapper.readTree(responseBody);
+
+            return jsonResponse.get("stock").asInt();
+        } catch (ParseException e) {
+            logger.error(response, e);
+            throw new RequestFailedException("Failed to parse response body", e);
+        } catch (IOException e) {
+            logger.error(response, e);
+            throw new RequestFailedException("Failed to read response body", e);
+        }
+    }
+
     @Override
     @Transactional
     public OrderDTO createOrder(OrderDTO orderDTO) {

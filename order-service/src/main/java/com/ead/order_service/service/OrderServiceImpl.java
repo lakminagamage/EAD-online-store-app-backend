@@ -16,17 +16,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.ead.order_service.helper.RequestHelper;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.hc.core5.http.ParseException;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -51,33 +45,6 @@ public class OrderServiceImpl implements OrderService {
 
         if (responseCode != HttpStatus.OK.value() && responseCode != HttpStatus.NO_CONTENT.value()) {
             throw new RuntimeException("Failed to update stock for product id: " + productId);
-        }
-    }
-
-    private int getProductStock(Long productId) throws RequestFailedException {
-        String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/products/" + productId + "/stock")
-                .toUriString();
-
-        logger.info("Requesting URL: {} to get stock for product id: {}", urlString, productId);
-
-        CloseableHttpResponse response = RequestHelper.SendGetRequest(urlString);
-
-        if (response.getCode() != HttpStatus.OK.value()) {
-            throw new RuntimeException("Failed to get stock for product id: " + productId);
-        }
-        
-        try {
-            String responseBody = EntityUtils.toString(response.getEntity());
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonResponse = objectMapper.readTree(responseBody);
-
-            return jsonResponse.get("stock").asInt();
-        } catch (ParseException e) {
-            logger.error(response, e);
-            throw new RequestFailedException("Failed to parse response body", e);
-        } catch (IOException e) {
-            logger.error(response, e);
-            throw new RequestFailedException("Failed to read response body", e);
         }
     }
 

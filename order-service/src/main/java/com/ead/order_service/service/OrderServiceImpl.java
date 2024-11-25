@@ -5,17 +5,28 @@ import com.ead.order_service.model.Order;
 import com.ead.order_service.model.OrderItem;
 import com.ead.order_service.repository.OrderRepository;
 import com.ead.order_service.exception.OrderNotFoundException;
+import com.ead.order_service.exception.RequestFailedException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.ead.order_service.helper.RequestHelper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -28,6 +39,47 @@ public class OrderServiceImpl implements OrderService {
 
     @Value("${api.gateway.url}")
     private String apiGatewayUrl;
+
+    private void updateProductStock(Long productId, int quantity) throws RequestFailedException {
+        String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/products/" + productId + "/stock")
+            .queryParam("request_quantity", quantity)
+            .toUriString();
+
+        logger.info("Requesting URL: {} to update stock for product id: {}", urlString, productId);
+
+        int responseCode = RequestHelper.SendPatchRequest(urlString, "");
+
+        if (responseCode != HttpStatus.OK.value() && responseCode != HttpStatus.NO_CONTENT.value()) {
+            throw new RuntimeException("Failed to update stock for product id: " + productId);
+        }
+    }
+
+    private int getProductStock(Long productId) throws RequestFailedException {
+        String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/products/" + productId + "/stock")
+                .toUriString();
+
+        logger.info("Requesting URL: {} to get stock for product id: {}", urlString, productId);
+
+        CloseableHttpResponse response = RequestHelper.SendGetRequest(urlString);
+
+        if (response.getCode() != HttpStatus.OK.value()) {
+            throw new RuntimeException("Failed to get stock for product id: " + productId);
+        }
+        
+        try {
+            String responseBody = EntityUtils.toString(response.getEntity());
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonResponse = objectMapper.readTree(responseBody);
+
+            return jsonResponse.get("stock").asInt();
+        } catch (ParseException e) {
+            logger.error(response, e);
+            throw new RequestFailedException("Failed to parse response body", e);
+        } catch (IOException e) {
+            logger.error(response, e);
+            throw new RequestFailedException("Failed to read response body", e);
+        }
+    }
 
     @Override
     @Transactional
@@ -45,9 +97,9 @@ public class OrderServiceImpl implements OrderService {
 
             logger.info("Requesting URL: {} to validate user id: {}", urlString, orderDTO.getUserId());
 
-            int responseCode = RequestHelper.SendGetRequest(urlString);
+            CloseableHttpResponse response = RequestHelper.SendGetRequest(urlString);
 
-            if (responseCode != HttpStatus.OK.value()) {
+            if (response.getCode() != HttpStatus.OK.value()) {
                 throw new RuntimeException("User not found with id: " + orderDTO.getUserId());
             }
         } catch (Exception e) {
@@ -67,24 +119,32 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderItems(orderItems);
         Order savedOrder = orderRepository.save(order);
 
+        List<Long> updatedProducts = new ArrayList<>();
+
         // validate the products and product stocks update the stocks of the products
         try {
             for (OrderItem item : orderItems) {
-                String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/products/" + item.getProductId() + "/stock")
-                        .queryParam("request_quantity", item.getQuantity())
-                        .toUriString();
+                updateProductStock(item.getProductId(), item.getQuantity());
 
-                logger.info("Requesting URL: {} to update stock for product id: {}", urlString, item.getProductId());
-
-                int responseCode = RequestHelper.SendPatchRequest(urlString, "");
-                
-                if (responseCode != HttpStatus.OK.value() && responseCode != HttpStatus.NO_CONTENT.value()) {
-                    throw new RuntimeException("Failed to update stock for product id: " + item.getProductId());
-                }
+                updatedProducts.add(item.getProductId());
             }
         } catch (Exception e) {
             logger.error("Failed to update stock, rolling back order creation", e);
             orderRepository.delete(savedOrder);
+
+            // undo the product stock update, if failed one of the stock update
+            try {
+                for (OrderItem item : orderItems) {
+                    if (updatedProducts.contains(item.getProductId())) {
+                        // update the stock to its previous value
+                        updateProductStock(item.getProductId(), -item.getQuantity());
+                    }
+                }
+            } catch (Exception ex) {
+                logger.error("Failed to undo stock update", ex);
+                throw new RuntimeException("Order creation failed due to stock update failure, Failed to undo stock update");
+            }
+
             throw new RuntimeException("Order creation failed due to stock update failure");
         }
 

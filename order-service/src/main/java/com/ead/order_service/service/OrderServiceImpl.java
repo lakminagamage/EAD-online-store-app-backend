@@ -38,6 +38,23 @@ public class OrderServiceImpl implements OrderService {
         order.setUserId(orderDTO.getUserId());
         order.setStatus(orderDTO.getStatus() != null ? orderDTO.getStatus() : "PENDING");
 
+        // validate user
+        try {
+            String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/users/" + orderDTO.getUserId())
+                    .toUriString();
+
+            logger.info("Requesting URL: {} to validate user id: {}", urlString, orderDTO.getUserId());
+
+            int responseCode = RequestHelper.SendGetRequest(urlString);
+
+            if (responseCode != HttpStatus.OK.value()) {
+                throw new RuntimeException("User not found with id: " + orderDTO.getUserId());
+            }
+        } catch (Exception e) {
+            logger.error("Failed to validate user", e);
+            throw new RuntimeException("Order creation failed due to user validation failure");
+        }
+
         List<OrderItem> orderItems = orderDTO.getItems().stream().map(itemDTO -> {
             OrderItem orderItem = new OrderItem();
             orderItem.setProductId(itemDTO.getProductId());
@@ -50,6 +67,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderItems(orderItems);
         Order savedOrder = orderRepository.save(order);
 
+        // validate the products and product stocks update the stocks of the products
         try {
             for (OrderItem item : orderItems) {
                 String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/products/" + item.getProductId() + "/stock")

@@ -103,18 +103,18 @@ func GetAllProductsByProductType(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetProductsByIDs(w http.ResponseWriter, r *http.Request) {
-    var requestBody struct {
-        IDs []string `json:"product_ids"`
-    }
-    if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-        http.Error(w, "Invalid input", http.StatusBadRequest)
+    idsQuery := r.URL.Query().Get("product_ids")
+    if idsQuery == "" {
+        http.Error(w, "Product IDs are required", http.StatusBadRequest)
         return
     }
 
-    log.Println("Product IDs:", requestBody.IDs)
+    ids := strings.Split(idsQuery, ",")
+
+    log.Println("Product IDs:", ids)
 
     var products []models.Product
-    if err := database.DB.Where("id IN ?", requestBody.IDs).Preload("Images").Find(&products).Error; err != nil {
+    if err := database.DB.Where("id IN ?", ids).Preload("Images").Find(&products).Error; err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }

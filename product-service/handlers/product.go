@@ -337,3 +337,20 @@ func DeleteProductType(w http.ResponseWriter, r *http.Request) {
 	database.DB.Delete(&productType)
 	json.NewEncoder(w).Encode(productType)
 }
+
+func GetProductStock(w http.ResponseWriter, r *http.Request) {
+    params := mux.Vars(r)
+    var product models.Product
+    if err := database.DB.First(&product, params["id"]).Error; err != nil {
+        http.Error(w, "Product not found", http.StatusNotFound)
+        return
+    }
+
+    response := map[string]interface{}{
+        "id":    product.ID,
+        "stock": product.Stock,
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(response)
+}

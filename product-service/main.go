@@ -27,6 +27,7 @@ func main() {
     r.HandleFunc("/products/{id}", handlers.UpdateProduct).Methods("PUT")
     r.HandleFunc("/products/{id}", handlers.DeleteProduct).Methods("DELETE")
     r.HandleFunc("/products/{id}/stock", handlers.UpdateStock).Methods("PATCH")
+    r.HandleFunc("/products/{id}/stock", handlers.GetProductStock).Methods("GET")
     r.HandleFunc("/products/search/", handlers.SearchProducts).Methods("GET")
     r.HandleFunc("/products/by-ids/", handlers.GetProductsByIDs).Methods("GET")
     r.HandleFunc("/products/by-type/{id}", handlers.GetAllProductsByProductType).Methods("GET")

@@ -121,6 +121,33 @@ router.put("/:id", upload.array("images"), async (req, res): Promise<void> => {
   }
 });
 
+router.delete("/:id", async (req, res): Promise<void> => {
+  try {
+    const productResponse = await axios.delete(
+      `${config.productServiceUrl}/products/${req.params.id}`
+    );
+
+    if (productResponse.status === 200) {
+      const fileUrls = productResponse.data.file_urls;
+
+      try {
+        await axios.post(`${config.fileServiceUrl}/files/delete/multiple`, {
+          files: fileUrls,
+        });
+      } catch (error) {
+        console.error("Error deleting files:", error);
+      }
+
+      res.status(204).send("Product deleted successfully");
+    } else {
+      res.status(productResponse.status).json(productResponse.data);
+    }
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 // Proxy for Product-related routes
 router.use(
   "/",

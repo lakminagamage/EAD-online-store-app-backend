@@ -235,16 +235,28 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 func DeleteProduct(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     var product models.Product
-    if err := database.DB.First(&product, params["id"]).Error; err != nil {
+    if err := database.DB.Preload("Images").First(&product, params["id"]).Error; err != nil {
         http.Error(w, "Product not found", http.StatusNotFound)
         return
     }
 
-    // delete the images associated with the product
-    database.DB.Where("product_id = ?", product.ID).Delete(&models.ProductImage{})
+    // Collect all file URLs
+    var fileUrls []string
+    for _, image := range product.Images {
+        fileUrls = append(fileUrls, image.URL)
+    }
 
+    // Delete the images associated with the product
+    database.DB.Where("product_id = ?", product.ID).Delete(&models.ProductImage{})
     database.DB.Delete(&product)
-    w.WriteHeader(http.StatusNoContent)
+
+    response := map[string]interface{}{
+        "message": "Product deleted successfully",
+        "file_urls": fileUrls,
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(response)
 }
 
 func SearchProducts(w http.ResponseWriter, r *http.Request) {

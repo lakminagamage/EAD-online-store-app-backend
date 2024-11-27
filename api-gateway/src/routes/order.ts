@@ -34,6 +34,36 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.post("/with-payment", async (req, res) => {
+  try {
+    const response = await axios.post(`${config.orderServiceUrl}/orders`, {
+      userId: req.body.userId,
+      status: "PAID",
+      items: req.body.items,
+    });
+
+    try {
+      await axios.post(`${config.paymentServiceUrl}/payments`, {
+        orderId: response.data.id,
+        paymentType: req.body.paymentType,
+      });
+    } catch (error) {
+      await axios.delete(
+        `${config.orderServiceUrl}/orders/${response.data.id}`
+      );
+      throw error;
+    }
+
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(500).json((error as Error).message);
+    }
+  }
+});
+
 router.delete("/:orderId", async (req, res) => {
   try {
     await axios.delete(

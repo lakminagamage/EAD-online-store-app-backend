@@ -56,7 +56,7 @@ public class PaymentService {
         if (!isOrderValid(order)) {
             throw new RuntimeException("Payment creation failed due to order validation failure");
         }
-
+        
         Payment payment = new Payment();
         payment.setPaymentType(paymentCreateDTO.getPaymentType());
         payment.setOrderId(paymentCreateDTO.getOrderId());

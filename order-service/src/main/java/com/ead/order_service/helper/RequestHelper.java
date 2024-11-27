@@ -1,13 +1,22 @@
 package com.ead.order_service.helper;
 
 import com.ead.order_service.exception.RequestFailedException;
+import com.ead.order_service.service.OrderServiceImpl;
+
 import org.apache.hc.client5.http.classic.methods.*;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class RequestHelper {
+
+    @Autowired
+    private static final Logger logger = LogManager.getLogger(OrderServiceImpl.class);
 
     public static CloseableHttpResponse SendGetRequest(String url) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
@@ -18,10 +27,13 @@ public class RequestHelper {
         }
     }
 
-    public static int SendPostRequest(String url, String body) {
+    public static int SendPostRequest(String url, JSONObject body) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost httpPost = new HttpPost(url);
-            httpPost.setEntity(new StringEntity(body));
+            httpPost.setEntity(new StringEntity(body.toString()));
+
+            logger.info("body: " + body.toString());
+
             try (var response = httpClient.execute(httpPost)) {
                 return response.getCode();
             }

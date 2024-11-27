@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/payments")
@@ -31,9 +32,9 @@ public class PaymentController {
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<PaymentDTO> getPaymentByOrderId(@PathVariable Long orderId) {
-        PaymentDTO payment = paymentService.getPaymentByOrderId(orderId);
-        return ResponseEntity.ok(payment);
+    public ResponseEntity<List<PaymentDTO>> getPaymentsByOrderId(@PathVariable Long orderId) {
+        List<PaymentDTO> payments = paymentService.getPaymentsByOrderId(orderId);
+        return ResponseEntity.ok(payments);
     }
 
     @PutMapping("/{id}")

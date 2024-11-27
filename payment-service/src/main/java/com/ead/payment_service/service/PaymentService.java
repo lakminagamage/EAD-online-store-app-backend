@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PaymentService {
@@ -50,10 +52,12 @@ public class PaymentService {
         return mapToPaymentDTO(payment);
     }
 
-    public PaymentDTO getPaymentByOrderId(Long orderId) {
-        Payment payment = paymentRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
-        return mapToPaymentDTO(payment);
+    public List<PaymentDTO> getPaymentsByOrderId(Long orderId) {
+        List<Payment> payments = paymentRepository.findByOrderId(orderId);
+        if (payments.isEmpty()) {
+            throw new ResourceNotFoundException("Payments not found");
+        }
+        return payments.stream().map(this::mapToPaymentDTO).collect(Collectors.toList());
     }
 
     public void deletePaymentById(Long id) {
@@ -66,6 +70,7 @@ public class PaymentService {
         PaymentDTO paymentDTO = new PaymentDTO();
         paymentDTO.setPaymentId(payment.getPaymentId());
         paymentDTO.setPaymentType(payment.getPaymentType());
+        paymentDTO.setOrderId(payment.getOrderId());
         paymentDTO.setCreatedAt(payment.getCreatedAt().format(formatter));
         paymentDTO.setUpdatedAt(payment.getUpdatedAt().format(formatter));
         return paymentDTO;

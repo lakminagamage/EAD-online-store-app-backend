@@ -2,7 +2,6 @@ package com.ead.order_service.controller;
 
 import com.ead.order_service.dto.OrderDTO;
 import com.ead.order_service.dto.OrderItemDTO;
-import com.ead.order_service.model.Order;
 import com.ead.order_service.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

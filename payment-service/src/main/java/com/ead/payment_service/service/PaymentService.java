@@ -92,12 +92,6 @@ public class PaymentService {
     }
 
     public List<PaymentDTO> getPaymentsByOrderId(Long orderId) {
-        // validate order
-        CloseableHttpResponse order = getOrderByID(orderId);
-        if (!isOrderValid(order)) {
-            throw new RuntimeException("Payments not found due to order validation failure");
-        }
-        
         List<Payment> payments = paymentRepository.findByOrderId(orderId);
         if (payments.isEmpty()) {
             throw new ResourceNotFoundException("Payments not found");
@@ -114,6 +108,15 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
         paymentRepository.delete(payment);
+    }
+
+    public void deletePaymentsByOrderId(Long orderId) {
+        List<Payment> payments = paymentRepository.findByOrderId(orderId);
+        if (payments.isEmpty()) {
+            throw new ResourceNotFoundException("Payments not found");
+        }
+
+        paymentRepository.deleteAll(payments);
     }
 
     private PaymentDTO mapToPaymentDTO(Payment payment) {

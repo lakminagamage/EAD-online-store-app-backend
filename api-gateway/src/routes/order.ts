@@ -17,11 +17,11 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/without-payment", async (req, res) => {
   try {
     const response = await axios.post(`${config.orderServiceUrl}/orders`, {
       userId: req.body.userId,
-      status: req.body.status,
+      status: "PENDING",
       items: req.body.items,
     });
     res.status(response.status).json(response.data);
@@ -69,6 +69,11 @@ router.delete("/:orderId", async (req, res) => {
     await axios.delete(
       `${config.orderServiceUrl}/orders/${req.params.orderId}`
     );
+
+    await axios.delete(
+      `${config.paymentServiceUrl}/payments/order/${req.params.orderId}`
+    );
+
     res.status(204).send();
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -89,6 +94,12 @@ router.get("/:orderId", async (req, res) => {
     order.items = await getOrderProducts(order.items);
     order.user = await getUserDetails(order.userId);
 
+    try {
+      order.payment = await getPaymentDetails(order.id);
+    } catch (error) {
+      order.payment = null;
+    }
+
     res.json(order);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -108,6 +119,12 @@ router.get("/user/:userId", async (req, res) => {
 
     for (const order of orders) {
       order.items = await getOrderProducts(order.items);
+
+      try {
+        order.payment = await getPaymentDetails(order.id);
+      } catch (error) {
+        order.payment = null;
+      }
     }
 
     res.json(orders);
@@ -164,6 +181,13 @@ async function getOrderProducts(items: any[]) {
 
 async function getUserDetails(userId: string) {
   const response = await axios.get(`${config.userServiceUrl}/users/${userId}`);
+  return response.data;
+}
+
+async function getPaymentDetails(orderId: string) {
+  const response = await axios.get(
+    `${config.paymentServiceUrl}/payments/order/${orderId}`
+  );
   return response.data;
 }
 

@@ -49,4 +49,10 @@ public class PaymentController {
         paymentService.deletePaymentById(id);
         return ResponseEntity.ok("Payment deleted successfully.");
     }
+
+    @DeleteMapping("/order/{orderId}")
+    public ResponseEntity<String> deletePaymentsByOrderId(@PathVariable Long orderId) {
+        paymentService.deletePaymentsByOrderId(orderId);
+        return ResponseEntity.ok("Payments deleted successfully.");
+    }
 }

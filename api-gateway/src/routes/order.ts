@@ -54,7 +54,33 @@ router.get("/:orderId", async (req, res) => {
     const response = await axios.get(
       `${config.orderServiceUrl}/orders/${req.params.orderId}`
     );
-    res.json(response.data);
+
+    const order = response.data;
+
+    const productIds = order.items.map((item: any) => item.productId).join(",");
+
+    const productResponse = await axios.get(
+      `${config.productServiceUrl}/products/by-ids/`,
+      {
+        params: { product_ids: productIds },
+      }
+    );
+
+    // Map product details to order items
+    order.items = order.items.map((item: any) => {
+      const product = productResponse.data.find(
+        (product: any) => product.ID === item.productId
+      );
+
+      if (product) {
+        return {
+          ...item,
+          product: product,
+        };
+      }
+    });
+
+    res.json(order);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       res.status(error.response.status).json(error.response.data);

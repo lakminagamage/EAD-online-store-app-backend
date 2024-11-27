@@ -119,15 +119,17 @@ func GetProductsByIDs(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    total := int64(len(products))
-
-    response := map[string]interface{}{
-        "total": total,
-        "data": products,
+    for i, product := range products {
+        var productType models.ProductType
+        if err := database.DB.First(&productType, product.ProductTypeID).Error; err != nil {
+            http.Error(w, "Product type not found", http.StatusNotFound)
+            return
+        }
+        products[i].ProductType = productType
     }
 
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(response)
+    json.NewEncoder(w).Encode(products)
 }
 
 func CreateProduct(w http.ResponseWriter, r *http.Request) {

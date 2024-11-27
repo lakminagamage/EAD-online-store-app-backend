@@ -57,6 +57,7 @@ router.get("/:orderId", async (req, res) => {
 
     const order = response.data;
     order.items = await getOrderProducts(order.items);
+    order.user = await getUserDetails(order.userId);
 
     res.json(order);
   } catch (error) {
@@ -129,6 +130,11 @@ async function getOrderProducts(items: any[]) {
       };
     }
   });
+}
+
+async function getUserDetails(userId: string) {
+  const response = await axios.get(`${config.userServiceUrl}/users/${userId}`);
+  return response.data;
 }
 
 export default router;

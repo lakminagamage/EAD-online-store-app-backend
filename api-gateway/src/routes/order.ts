@@ -54,7 +54,33 @@ router.get("/:orderId", async (req, res) => {
     const response = await axios.get(
       `${config.orderServiceUrl}/orders/${req.params.orderId}`
     );
-    res.json(response.data);
+
+    const order = response.data;
+    order.items = await getOrderProducts(order.items);
+    order.user = await getUserDetails(order.userId);
+
+    res.json(order);
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(500).json((error as Error).message);
+    }
+  }
+});
+
+router.get("/user/:userId", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `${config.orderServiceUrl}/orders/user/${req.params.userId}`
+    );
+    const orders = response.data;
+
+    for (const order of orders) {
+      order.items = await getOrderProducts(order.items);
+    }
+
+    res.json(orders);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       res.status(error.response.status).json(error.response.data);
@@ -82,5 +108,33 @@ router.patch("/:orderId/payment-status", async (req, res) => {
     }
   }
 });
+
+async function getOrderProducts(items: any[]) {
+  const productIds = items.map((item: any) => item.productId).join(",");
+  const productResponse = await axios.get(
+    `${config.productServiceUrl}/products/by-ids/`,
+    {
+      params: { product_ids: productIds },
+    }
+  );
+
+  return items.map((item: any) => {
+    const product = productResponse.data.find(
+      (product: any) => product.ID === item.productId
+    );
+
+    if (product) {
+      return {
+        ...item,
+        product: product,
+      };
+    }
+  });
+}
+
+async function getUserDetails(userId: string) {
+  const response = await axios.get(`${config.userServiceUrl}/users/${userId}`);
+  return response.data;
+}
 
 export default router;

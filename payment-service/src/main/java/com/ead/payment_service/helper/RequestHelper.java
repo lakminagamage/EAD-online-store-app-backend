@@ -1,6 +1,6 @@
-package com.ead.order_service.helper;
+package com.ead.payment_service.helper;
 
-import com.ead.order_service.exception.RequestFailedException;
+import com.ead.payment_service.exception.RequestFailedException;
 import org.apache.hc.client5.http.classic.methods.*;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -8,7 +8,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
 public class RequestHelper {
-
+    
     public static CloseableHttpResponse SendGetRequest(String url) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet httpGet = new HttpGet(url);

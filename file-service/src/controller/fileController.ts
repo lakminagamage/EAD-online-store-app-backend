@@ -136,11 +136,6 @@ export const deleteMultipleFiles = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  if (req.method !== "DELETE") {
-    res.status(400).json({ message: "Method not allowed" });
-    return;
-  }
-
   if (!req.body.files) {
     res.status(400).json({ message: "Files are required" });
     return;

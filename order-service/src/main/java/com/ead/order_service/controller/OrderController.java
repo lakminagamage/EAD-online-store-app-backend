@@ -48,4 +48,10 @@ public class OrderController extends AbstractController{
         return noContentResponse();
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<OrderDTO>> getOrdersByUserId(@PathVariable Long userId) {
+        List<OrderDTO> orders = orderService.getOrdersByUserId(userId);
+        return successResponse(orders, HttpStatus.OK);
+    }
+
 }

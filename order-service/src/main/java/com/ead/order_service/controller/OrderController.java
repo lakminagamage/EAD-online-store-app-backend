@@ -1,6 +1,8 @@
 package com.ead.order_service.controller;
 
 import com.ead.order_service.dto.OrderDTO;
+import com.ead.order_service.dto.OrderItemDTO;
+import com.ead.order_service.model.Order;
 import com.ead.order_service.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,9 +27,10 @@ public class OrderController extends AbstractController{
     }
 
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId) {
-        orderService.deleteOrder(orderId);
-        return noContentResponse();
+    public ResponseEntity<List<OrderItemDTO>> deleteOrder(@PathVariable Long orderId) {
+        List<OrderItemDTO> orderItems = orderService.deleteOrder(orderId);
+
+        return successResponse(orderItems, HttpStatus.OK);
     }
 
     @GetMapping("/{orderId}")

@@ -66,13 +66,17 @@ router.post("/with-payment", async (req, res) => {
 
 router.delete("/:orderId", async (req, res) => {
   try {
-    await axios.delete(
+    const response = await axios.delete(
       `${config.orderServiceUrl}/orders/${req.params.orderId}`
     );
 
-    await axios.delete(
-      `${config.paymentServiceUrl}/payments/order/${req.params.orderId}`
-    );
+    try {
+      await axios.delete(
+        `${config.paymentServiceUrl}/payments/order/${req.params.orderId}`
+      );
+    } catch (error) {}
+
+    console.log(response.data);
 
     res.status(204).send();
   } catch (error) {

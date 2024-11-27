@@ -179,11 +179,40 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void deleteOrder(Long orderId) {
+    public List<OrderItemDTO> deleteOrder(Long orderId) {
         if (!orderRepository.existsById(orderId)) {
             throw new OrderNotFoundException(orderId);
         }
-        orderRepository.deleteById(orderId);
+        
+        // get all order items
+        List<OrderItem> orderItems = orderRepository.findByIdWithItems(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId))
+                .getOrderItems();
+
+        // map order items to order item DTO
+        List<OrderItemDTO> orderItemsDTO = orderItems.stream()
+                .map(orderItem -> {
+                    OrderItemDTO orderItemDTO = new OrderItemDTO();
+                    orderItemDTO.setProductId(orderItem.getProductId());
+                    orderItemDTO.setQuantity(orderItem.getQuantity());
+                    orderItemDTO.setPrice(orderItem.getPrice());
+                    return orderItemDTO;
+                })
+                .collect(Collectors.toList());
+
+        // undo the product stock update
+        try {
+            for (OrderItem item : orderItems) {
+                updateProductStock(item.getProductId(), -item.getQuantity());
+            }
+
+            orderRepository.deleteById(orderId);
+        } catch (Exception e) {
+            logger.error("Failed to undo stock update", e);
+            throw new RuntimeException("Failed to undo stock update");
+        }
+
+        return orderItemsDTO;
     }
 
     @Override

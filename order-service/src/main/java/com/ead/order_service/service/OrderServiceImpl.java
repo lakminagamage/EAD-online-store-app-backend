@@ -194,4 +194,46 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
         logger.info("Updated payment status for order id: {} to status: {}", orderId, status);
     }
+
+    @Override
+    public List<OrderDTO> getOrdersByUserId(Long userId) {
+        // validate user
+        try {
+            String urlString = UriComponentsBuilder.fromHttpUrl(apiGatewayUrl + "/users/" + userId)
+                    .toUriString();
+
+            logger.info("Requesting URL: {} to validate user id: {}", urlString, userId);
+
+            CloseableHttpResponse response = RequestHelper.SendGetRequest(urlString);
+
+            if (response.getCode() != HttpStatus.OK.value()) {
+                throw new RuntimeException("User not found with id: " + userId);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to validate user", e);
+            throw new RuntimeException("Failed to validate user with id: " + userId);
+        }
+
+        List<Order> orders = orderRepository.findByUserId(userId);
+
+        return orders.stream()
+                .map(order -> {
+                    OrderDTO orderDTO = new OrderDTO();
+                    orderDTO.setId(order.getId());
+                    orderDTO.setUserId(order.getUserId());
+                    orderDTO.setStatus(order.getStatus());
+
+                    List<OrderItemDTO> items = order.getOrderItems().stream().map(orderItem -> {
+                        OrderItemDTO itemDTO = new OrderItemDTO();
+                        itemDTO.setProductId(orderItem.getProductId());
+                        itemDTO.setQuantity(orderItem.getQuantity());
+                        itemDTO.setPrice(orderItem.getPrice());
+                        return itemDTO;
+                    }).collect(Collectors.toList());
+
+                    orderDTO.setItems(items);
+                    return orderDTO;
+                })
+                .collect(Collectors.toList());
+    }
 }

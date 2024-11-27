@@ -8,4 +8,5 @@ public interface OrderService {
     OrderDTO getOrderById(Long orderId);
     List<OrderDTO> getAllOrders();
     void updatePaymentStatus(Long orderId, String status);
+    List<OrderDTO> getOrdersByUserId(Long userId);
 }

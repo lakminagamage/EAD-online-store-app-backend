@@ -12,7 +12,6 @@ import org.modelmapper.ModelMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -44,9 +43,33 @@ public class CartServiceImpl implements CartService {
         // find cart by id
         Cart cart = this.cartRepository.findByUserID(userId);
 
+        if (cart == null) {
+            throw new CartNotFoundException("Cart not found");
+        }
 
+        List<CartItem> cartItems = cart.getCartItems();
 
-        return null;
+        if (cartItems == null) {
+            cartItems = List.of();
+        }
+
+        for (CartItem cartItem : cartItems) {
+            if (cartItem.getProductId().equals(cartItemDTO.getProductId())) {
+                cartItem.setQuantity(cartItem.getQuantity() + cartItemDTO.getQuantity());
+            }
+            else {
+                CartItem newCartItem = new CartItem();
+                newCartItem.setProductId(cartItemDTO.getProductId());
+                newCartItem.setQuantity(cartItemDTO.getQuantity());
+                newCartItem.setCart(cart);
+                cartItems.add(newCartItem);
+                cart.setCartItems(cartItems);
+            }
+        }
+
+        cart = cartRepository.save(cart);
+
+        return modelMapper.map(cart, CartDTO.class);
     }
 
     @Override

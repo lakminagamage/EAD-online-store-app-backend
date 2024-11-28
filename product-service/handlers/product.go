@@ -75,6 +75,8 @@ func GetProductByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	product.ProductType = productType
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(product)
 }
@@ -112,33 +114,33 @@ func GetAllProductsByProductType(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetProductsByIDs(w http.ResponseWriter, r *http.Request) {
-    idsQuery := r.URL.Query().Get("product_ids")
-    if idsQuery == "" {
-        http.Error(w, "Product IDs are required", http.StatusBadRequest)
-        return
-    }
+	idsQuery := r.URL.Query().Get("product_ids")
+	if idsQuery == "" {
+		http.Error(w, "Product IDs are required", http.StatusBadRequest)
+		return
+	}
 
-    ids := strings.Split(idsQuery, ",")
+	ids := strings.Split(idsQuery, ",")
 
-    log.Println("Product IDs:", ids)
+	log.Println("Product IDs:", ids)
 
-    var products []models.Product
-    if err := database.DB.Where("id IN ?", ids).Preload("Images").Find(&products).Error; err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	var products []models.Product
+	if err := database.DB.Where("id IN ?", ids).Preload("Images").Find(&products).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    for i, product := range products {
-        var productType models.ProductType
-        if err := database.DB.First(&productType, product.ProductTypeID).Error; err != nil {
-            http.Error(w, "Product type not found", http.StatusNotFound)
-            return
-        }
-        products[i].ProductType = productType
-    }
+	for i, product := range products {
+		var productType models.ProductType
+		if err := database.DB.First(&productType, product.ProductTypeID).Error; err != nil {
+			http.Error(w, "Product type not found", http.StatusNotFound)
+			return
+		}
+		products[i].ProductType = productType
+	}
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(products)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(products)
 }
 
 func CreateProduct(w http.ResponseWriter, r *http.Request) {
@@ -242,30 +244,30 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteProduct(w http.ResponseWriter, r *http.Request) {
-    params := mux.Vars(r)
-    var product models.Product
-    if err := database.DB.Preload("Images").First(&product, params["id"]).Error; err != nil {
-        http.Error(w, "Product not found", http.StatusNotFound)
-        return
-    }
+	params := mux.Vars(r)
+	var product models.Product
+	if err := database.DB.Preload("Images").First(&product, params["id"]).Error; err != nil {
+		http.Error(w, "Product not found", http.StatusNotFound)
+		return
+	}
 
-    // Collect all file URLs
-    var fileUrls []string
-    for _, image := range product.Images {
-        fileUrls = append(fileUrls, image.URL)
-    }
+	// Collect all file URLs
+	var fileUrls []string
+	for _, image := range product.Images {
+		fileUrls = append(fileUrls, image.URL)
+	}
 
-    // Delete the images associated with the product
-    database.DB.Where("product_id = ?", product.ID).Delete(&models.ProductImage{})
-    database.DB.Delete(&product)
+	// Delete the images associated with the product
+	database.DB.Where("product_id = ?", product.ID).Delete(&models.ProductImage{})
+	database.DB.Delete(&product)
 
-    response := map[string]interface{}{
-        "message": "Product deleted successfully",
-        "file_urls": fileUrls,
-    }
+	response := map[string]interface{}{
+		"message":   "Product deleted successfully",
+		"file_urls": fileUrls,
+	}
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(response)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
 func SearchProducts(w http.ResponseWriter, r *http.Request) {
@@ -356,18 +358,18 @@ func DeleteProductType(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetProductStock(w http.ResponseWriter, r *http.Request) {
-    params := mux.Vars(r)
-    var product models.Product
-    if err := database.DB.First(&product, params["id"]).Error; err != nil {
-        http.Error(w, "Product not found", http.StatusNotFound)
-        return
-    }
+	params := mux.Vars(r)
+	var product models.Product
+	if err := database.DB.First(&product, params["id"]).Error; err != nil {
+		http.Error(w, "Product not found", http.StatusNotFound)
+		return
+	}
 
-    response := map[string]interface{}{
-        "id":    product.ID,
-        "stock": product.Stock,
-    }
+	response := map[string]interface{}{
+		"id":    product.ID,
+		"stock": product.Stock,
+	}
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(response)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

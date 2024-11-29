@@ -122,7 +122,9 @@ router.get("/user/:userId", async (req, res) => {
     const orders = response.data;
 
     for (const order of orders) {
-      order.items = await getOrderProducts(order.items);
+      if (order.items.length > 0) {
+        order.items = await getOrderProducts(order.items);
+      }
 
       try {
         order.payment = await getPaymentDetails(order.id);

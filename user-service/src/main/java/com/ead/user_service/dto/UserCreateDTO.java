@@ -10,4 +10,5 @@ public class UserCreateDTO {
     private String country;
     private String phone;
     private int postalCode;
+    private String password;
 }

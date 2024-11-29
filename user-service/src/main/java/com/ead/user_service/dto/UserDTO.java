@@ -1,4 +1,5 @@
 package com.ead.user_service.dto;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

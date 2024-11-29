@@ -4,6 +4,18 @@ import { config } from "../config";
 
 const router = Router();
 
+// Get user by email
+router.get("/email", async (req, res) => {
+  try {
+    const response = await axios.get(`${config.userServiceUrl}/users/email`, {
+      params: { email: req.query.email },
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
 // user controller
 // get all users
 router.get("/", async (req, res) => {
@@ -58,18 +70,6 @@ router.delete("/:id", async (req, res) => {
   try {
     await axios.delete(`${config.userServiceUrl}/users/${req.params.id}`);
     res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ error });
-  }
-});
-
-// Get user by email
-router.get("/email", async (req, res) => {
-  try {
-    const response = await axios.get(`${config.userServiceUrl}/users/email`, {
-      params: { email: req.query.email },
-    });
-    res.json(response.data);
   } catch (error) {
     res.status(500).json({ error });
   }

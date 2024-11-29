@@ -22,4 +22,16 @@ public class AuthService {
     public boolean verifyToken(String token) {
         return supabaseUtil.verifyToken(token);
     }
+
+    public ResponseEntity<String> sendPasswordResetEmail(String email) {
+        return supabaseUtil.sendPasswordResetEmail(email);
+    }
+
+    public ResponseEntity<String> resetPassword(String accessToken, String newPassword) {
+        return supabaseUtil.resetPassword(accessToken, newPassword);
+    }
+
+    public ResponseEntity<String> verifyOtp(String email, String type, String token) {
+        return supabaseUtil.verifyOtp(email, type, token);
+    }
 }

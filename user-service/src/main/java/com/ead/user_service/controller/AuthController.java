@@ -1,17 +1,19 @@
 package com.ead.user_service.controller;
 
+import com.ead.user_service.dto.UserCreateDTO;
+import com.ead.user_service.dto.UserDTO;
+import com.ead.user_service.dto.UserSigninDTO;
 import com.ead.user_service.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
-
-
 
 @RestController
 @RequestMapping("/auth")
@@ -21,17 +23,25 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody Map<String, String> payload) {
-        String email = payload.get("email");
-        String password = payload.get("password");
-        return authService.register(email, password);
+    public ResponseEntity<UserDTO> register(@RequestBody @Valid UserCreateDTO userCreateDTO) {
+        UserDTO newUser = authService.register(userCreateDTO);
+        if (newUser == null) {
+            return ResponseEntity.badRequest().build();
+        } else {
+            return ResponseEntity.ok(authService.register(userCreateDTO));
+        }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<UserSigninDTO> login(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
         String password = payload.get("password");
-        return authService.login(email, password);
+        UserSigninDTO userSigninDTO = authService.login(email, password);
+        if (userSigninDTO == null) {
+            return ResponseEntity.badRequest().build();
+        } else {
+            return ResponseEntity.ok(userSigninDTO);
+        }
     }
 
     @PostMapping("/send-password-reset-email")

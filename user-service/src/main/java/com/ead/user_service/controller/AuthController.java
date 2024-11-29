@@ -1,11 +1,17 @@
 package com.ead.user_service.controller;
 
 import com.ead.user_service.service.AuthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
+
+
 
 @RestController
 @RequestMapping("/auth")
@@ -47,18 +53,19 @@ public class AuthController {
         String type = payload.get("type");
         String token = payload.get("token");
         ResponseEntity<String> response = authService.verifyOtp(email, type, token);
-        // Extract access token from the response
-        // String accessToken = extractAccessToken(response.getBody());
-        // return ResponseEntity.ok(accessToken);
-        return response;
+
+        String accessToken = extractAccessToken(response.getBody());
+        return ResponseEntity.ok(accessToken);
     }
 
-    // private String extractAccessToken(String responseBody) {
-    //     // Parse the response body to extract the access token
-    //     // This is a placeholder implementation. You need to parse the actual response.
-    //     // Assuming the response body is a JSON object containing the access token
-    //     // Example: {"access_token": "YOUR_ACCESS_TOKEN"}
-    //     // You can use a JSON library like Jackson or Gson to parse the response
-    //     return ""; // Add appropriate logic here
-    // }
+    private String extractAccessToken(String responseBody) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(responseBody);
+            return rootNode.path("access_token").asText();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; // Handle this appropriately in your application
+        }
+    }
 }

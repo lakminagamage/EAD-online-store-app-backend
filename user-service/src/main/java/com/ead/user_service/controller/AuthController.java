@@ -25,10 +25,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@RequestBody @Valid UserCreateDTO userCreateDTO) {
         UserDTO newUser = authService.register(userCreateDTO);
+
         if (newUser == null) {
             return ResponseEntity.badRequest().build();
         } else {
-            return ResponseEntity.ok(authService.register(userCreateDTO));
+            return ResponseEntity.ok(newUser);
         }
     }
 

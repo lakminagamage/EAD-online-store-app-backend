@@ -69,8 +69,9 @@ public class AuthService {
     }
 
     // private UserDTO mapToUserDTO(User user) {
-    //     return new UserDTO(user.getId(), user.getType(), user.getName(), user.getEmail(),
-    //             user.getCountry(), user.getPhone(), user.getPostalCode(),
-    //             user.getCreatedAt().toString(), user.getUpdatedAt().toString());
+    // return new UserDTO(user.getId(), user.getType(), user.getName(),
+    // user.getEmail(),
+    // user.getCountry(), user.getPhone(), user.getPostalCode(),
+    // user.getCreatedAt().toString(), user.getUpdatedAt().toString());
     // }
 }

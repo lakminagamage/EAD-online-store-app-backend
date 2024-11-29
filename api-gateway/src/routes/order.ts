@@ -186,7 +186,9 @@ async function getOrderProducts(items: any[]) {
 }
 
 async function getUserDetails(userId: string) {
-  const response = await axios.get(`${config.userServiceUrl}/users/${userId}`);
+  const response = await axios.get(
+    `${config.userServiceUrl}/api/users/${userId}`
+  );
   return response.data;
 }
 

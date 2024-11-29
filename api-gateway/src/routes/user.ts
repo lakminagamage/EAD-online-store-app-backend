@@ -11,7 +11,7 @@ router.get("/", async (req, res) => {
     const response = await axios.get(`${config.userServiceUrl}/users`);
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -24,20 +24,19 @@ router.post("/", async (req, res) => {
     );
     res.status(201).json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
 // Get user by ID
 router.get("/:id", async (req, res) => {
   try {
-    console.log(`${config.userServiceUrl}/users/${req.params.id}`);
     const response = await axios.get(
       `${config.userServiceUrl}/users/${req.params.id}`
     );
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -50,7 +49,7 @@ router.put("/:id", async (req, res) => {
     );
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -60,7 +59,7 @@ router.delete("/:id", async (req, res) => {
     await axios.delete(`${config.userServiceUrl}/users/${req.params.id}`);
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -72,7 +71,7 @@ router.get("/email", async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -86,7 +85,7 @@ router.post("/auth/register", async (req, res) => {
     );
     res.status(201).json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -99,7 +98,7 @@ router.post("/auth/login", async (req, res) => {
     );
     res.status(200).json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -112,7 +111,7 @@ router.post("/auth/verify-token", async (req, res) => {
     );
     res.status(200).json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -125,7 +124,7 @@ router.post("/auth/send-password-reset-email", async (req, res) => {
     );
     res.status(200).json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -138,7 +137,7 @@ router.post("/auth/reset-password", async (req, res) => {
     );
     res.status(200).json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 
@@ -151,7 +150,7 @@ router.post("/auth/verify-otp", async (req, res) => {
     );
     res.status(200).json(response.data);
   } catch (error) {
-    res.status(500).json({ message: "User Service is unavailable" });
+    res.status(500).json({ error });
   }
 });
 

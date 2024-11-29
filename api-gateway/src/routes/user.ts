@@ -4,9 +4,11 @@ import { config } from "../config";
 
 const router = Router();
 
+// user controller
+// get all users
 router.get("/", async (req, res) => {
   try {
-    const response = await axios.get(`${config.userServiceUrl}/api/users`);
+    const response = await axios.get(`${config.userServiceUrl}/users`);
     res.json(response.data);
   } catch (error) {
     res.status(500).json({ message: "User Service is unavailable" });
@@ -17,7 +19,7 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const response = await axios.post(
-      `${config.userServiceUrl}/api/users`,
+      `${config.userServiceUrl}/users`,
       req.body
     );
     res.status(201).json(response.data);
@@ -29,8 +31,9 @@ router.post("/", async (req, res) => {
 // Get user by ID
 router.get("/:id", async (req, res) => {
   try {
+    console.log(`${config.userServiceUrl}/users/${req.params.id}`);
     const response = await axios.get(
-      `${config.userServiceUrl}/api/users/${req.params.id}`
+      `${config.userServiceUrl}/users/${req.params.id}`
     );
     res.json(response.data);
   } catch (error) {
@@ -42,7 +45,7 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const response = await axios.put(
-      `${config.userServiceUrl}/api/users/${req.params.id}`,
+      `${config.userServiceUrl}/users/${req.params.id}`,
       req.body
     );
     res.json(response.data);
@@ -54,7 +57,7 @@ router.put("/:id", async (req, res) => {
 // Delete user by ID
 router.delete("/:id", async (req, res) => {
   try {
-    await axios.delete(`${config.userServiceUrl}/api/users/${req.params.id}`);
+    await axios.delete(`${config.userServiceUrl}/users/${req.params.id}`);
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: "User Service is unavailable" });
@@ -64,11 +67,89 @@ router.delete("/:id", async (req, res) => {
 // Get user by email
 router.get("/email", async (req, res) => {
   try {
-    const response = await axios.get(
-      `${config.userServiceUrl}/api/users/email`,
-      { params: { email: req.query.email } }
-    );
+    const response = await axios.get(`${config.userServiceUrl}/users/email`, {
+      params: { email: req.query.email },
+    });
     res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: "User Service is unavailable" });
+  }
+});
+
+// auth controller
+// Register a new user
+router.post("/auth/register", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${config.userServiceUrl}/auth/register`,
+      req.body
+    );
+    res.status(201).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: "User Service is unavailable" });
+  }
+});
+
+// Login user
+router.post("/auth/login", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${config.userServiceUrl}/auth/login`,
+      req.body
+    );
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: "User Service is unavailable" });
+  }
+});
+
+// Verify token
+router.post("/auth/verify-token", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${config.userServiceUrl}/auth/verify-token`,
+      req.body
+    );
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: "User Service is unavailable" });
+  }
+});
+
+// Send password reset email
+router.post("/auth/send-password-reset-email", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${config.userServiceUrl}/auth/send-password-reset-email`,
+      req.body
+    );
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: "User Service is unavailable" });
+  }
+});
+
+// Reset password
+router.post("/auth/reset-password", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${config.userServiceUrl}/auth/reset-password`,
+      req.body
+    );
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: "User Service is unavailable" });
+  }
+});
+
+// Verify OTP
+router.post("/auth/verify-otp", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${config.userServiceUrl}/auth/verify-otp`,
+      req.body
+    );
+    res.status(200).json(response.data);
   } catch (error) {
     res.status(500).json({ message: "User Service is unavailable" });
   }

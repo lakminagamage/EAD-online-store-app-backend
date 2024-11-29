@@ -3,7 +3,6 @@ package com.ead.user_service.service;
 import com.ead.user_service.dto.UserCreateDTO;
 import com.ead.user_service.dto.UserDTO;
 import com.ead.user_service.dto.UserSigninDTO;
-import com.ead.user_service.model.User;
 import com.ead.user_service.util.SupabaseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -69,9 +68,9 @@ public class AuthService {
         return supabaseUtil.verifyOtp(email, type, token);
     }
 
-    private UserDTO mapToUserDTO(User user) {
-        return new UserDTO(user.getId(), user.getType(), user.getName(), user.getEmail(),
-                user.getCountry(), user.getPhone(), user.getPostalCode(),
-                user.getCreatedAt().toString(), user.getUpdatedAt().toString());
-    }
+    // private UserDTO mapToUserDTO(User user) {
+    //     return new UserDTO(user.getId(), user.getType(), user.getName(), user.getEmail(),
+    //             user.getCountry(), user.getPhone(), user.getPostalCode(),
+    //             user.getCreatedAt().toString(), user.getUpdatedAt().toString());
+    // }
 }

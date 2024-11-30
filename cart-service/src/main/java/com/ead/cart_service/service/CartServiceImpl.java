@@ -8,7 +8,6 @@ import com.ead.cart_service.repository.CartRepository;
 import com.ead.cart_service.exception.CartNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.modelmapper.ModelMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.List;

@@ -1,7 +1,6 @@
 package com.ead.cart_service.controller;
 
 import com.ead.cart_service.dto.CartDTO;
-import com.ead.cart_service.dto.CartItemDTO;
 import com.ead.cart_service.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,10 +30,10 @@ public class CartController extends AbstractController{
         return successResponse(cart, HttpStatus.OK);
     }
 
-    @PutMapping("/user/{userId}")
-    public ResponseEntity<CartDTO> addItemsToCart(@RequestBody CartItemDTO cartDTO, @PathVariable Long userId) {
-        CartDTO updatedCart = cartService.addItemsToCart(cartDTO, userId);
-        return ResponseEntity.ok(updatedCart);
-    }
+    // @PutMapping("/user/{userId}")
+    // public ResponseEntity<CartDTO> addItemsToCart(@RequestBody CartItemDTO cartDTO, @PathVariable Long userId) {
+    //     CartDTO updatedCart = cartService.addItemsToCart(cartDTO, userId);
+    //     return ResponseEntity.ok(updatedCart);
+    // }
 
 }

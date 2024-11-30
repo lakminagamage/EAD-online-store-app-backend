@@ -1,6 +1,5 @@
 package com.ead.cart_service.dto;
 
-import com.ead.cart_service.model.CartItem;
 import lombok.Data;
 
 import java.util.List;

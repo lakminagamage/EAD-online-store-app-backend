@@ -42,7 +42,7 @@ router.post("/", async (req, res) => {
 });
 
 // Get user by ID
-router.get("/:id", authMiddleware, async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const response = await axios.get(
       `${config.userServiceUrl}/users/${req.params.id}`

@@ -4,6 +4,7 @@ import { config } from "../config";
 import multer from "multer";
 import axios from "axios";
 import FormData from "form-data";
+import authMiddleware from "./../middleware/authMiddleware";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -53,7 +54,7 @@ const createOrUpdateProduct = async (
   }
 };
 
-router.post("/", upload.array("images"), async (req, res): Promise<void> => {
+router.post("/", authMiddleware, upload.array("images"), async (req, res): Promise<void> => {
   try {
     const files = req.files as Express.Multer.File[];
     if (!files || files.length === 0) {
@@ -85,7 +86,7 @@ router.post("/", upload.array("images"), async (req, res): Promise<void> => {
   }
 });
 
-router.put("/:id", upload.array("images"), async (req, res): Promise<void> => {
+router.put("/:id", authMiddleware, upload.array("images"), async (req, res): Promise<void> => {
   try {
     const files = req.files as Express.Multer.File[];
     if (!files || files.length === 0) {
@@ -121,7 +122,7 @@ router.put("/:id", upload.array("images"), async (req, res): Promise<void> => {
   }
 });
 
-router.delete("/:id", async (req, res): Promise<void> => {
+router.delete("/:id", authMiddleware, async (req, res): Promise<void> => {
   try {
     const productResponse = await axios.delete(
       `${config.productServiceUrl}/products/${req.params.id}`
@@ -165,8 +166,7 @@ router.use(
       },
       error: (err, req, res) => {
         console.error(
-          `Error proxying request to: ${config.productServiceUrl}${
-            (req as express.Request).originalUrl
+          `Error proxying request to: ${config.productServiceUrl}${(req as express.Request).originalUrl
           }`,
           err
         );

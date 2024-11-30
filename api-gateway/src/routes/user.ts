@@ -1,11 +1,12 @@
 import { Router } from "express";
 import axios from "axios";
 import { config } from "../config";
+import authMiddleware from "../middleware/authMiddleware";
 
 const router = Router();
 
 // Get user by email
-router.get("/email", async (req, res) => {
+router.get("/email", authMiddleware, async (req, res) => {
   try {
     const response = await axios.get(`${config.userServiceUrl}/users/email`, {
       params: { email: req.query.email },
@@ -18,7 +19,7 @@ router.get("/email", async (req, res) => {
 
 // user controller
 // get all users
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const response = await axios.get(`${config.userServiceUrl}/users`);
     res.json(response.data);
@@ -41,7 +42,7 @@ router.post("/", async (req, res) => {
 });
 
 // Get user by ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", authMiddleware, async (req, res) => {
   try {
     const response = await axios.get(
       `${config.userServiceUrl}/users/${req.params.id}`
@@ -53,7 +54,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Update user by ID
-router.put("/:id", async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const response = await axios.put(
       `${config.userServiceUrl}/users/${req.params.id}`,
@@ -66,7 +67,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // Delete user by ID
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     await axios.delete(`${config.userServiceUrl}/users/${req.params.id}`);
     res.status(204).send();

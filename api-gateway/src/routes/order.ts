@@ -1,6 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import { config } from "../config";
+import authMiddleware from "../middleware/authMiddleware";
 
 const router = Router();
 
@@ -34,7 +35,7 @@ router.post("/without-payment", async (req, res) => {
   }
 });
 
-router.post("/with-payment", async (req, res) => {
+router.post("/with-payment", authMiddleware, async (req, res) => {
   try {
     const response = await axios.post(`${config.orderServiceUrl}/orders`, {
       userId: req.body.userId,
@@ -64,7 +65,7 @@ router.post("/with-payment", async (req, res) => {
   }
 });
 
-router.delete("/:orderId", async (req, res) => {
+router.delete("/:orderId", authMiddleware, async (req, res) => {
   try {
     const response = await axios.delete(
       `${config.orderServiceUrl}/orders/${req.params.orderId}`
@@ -74,7 +75,7 @@ router.delete("/:orderId", async (req, res) => {
       await axios.delete(
         `${config.paymentServiceUrl}/payments/order/${req.params.orderId}`
       );
-    } catch (error) {}
+    } catch (error) { }
 
     console.log(response.data);
 
@@ -143,7 +144,7 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
-router.patch("/:orderId/payment-status", async (req, res) => {
+router.patch("/:orderId/payment-status", authMiddleware, async (req, res) => {
   try {
     await axios.patch(
       `${config.orderServiceUrl}/orders/${req.params.orderId}/payment-status`,

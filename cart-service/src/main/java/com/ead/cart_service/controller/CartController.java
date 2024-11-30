@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/carts")
+@RequestMapping("/carts")
 public class CartController extends AbstractController{
 
     @Autowired
@@ -31,11 +31,10 @@ public class CartController extends AbstractController{
         return successResponse(cart, HttpStatus.OK);
     }
 
-//    @PutMapping("/user/{userId}")
-//    public ResponseEntity<CartDTO> addItemsToCart(@RequestBody CartItemDTO cartDTO, @PathVariable Long userId) {
-//        CartDTO updatedCart = cartService.addItemsToCart(cartDTO, userId);
-//        return ResponseEntity.ok(updatedCart);
-//    }
-
+    @PutMapping("/user/{userId}")
+    public ResponseEntity<CartDTO> addItemsToCart(@RequestBody CartItemDTO cartDTO, @PathVariable Long userId) {
+        CartDTO updatedCart = cartService.addItemsToCart(cartDTO, userId);
+        return ResponseEntity.ok(updatedCart);
+    }
 
 }

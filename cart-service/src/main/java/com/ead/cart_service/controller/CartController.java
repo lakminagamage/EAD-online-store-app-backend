@@ -17,25 +17,25 @@ public class CartController extends AbstractController{
 
     @PostMapping
     public ResponseEntity<CartDTO> createCart(@RequestBody CartDTO cartDTO) {
+        if (cartDTO.getItems() == null || cartDTO.getItems().isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
         CartDTO createdCart = cartService.createCart(cartDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdCart);
+        return createdResponse(createdCart);
     }
+
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<CartDTO> getCartByUserId(@PathVariable Long userId) {
-        CartDTO cartDTO = cartService.getCartByUserId(userId);
-        return ResponseEntity.ok(cartDTO);
+        CartDTO cart = cartService.getCartByUserId(userId);
+        return successResponse(cart, HttpStatus.OK);
     }
 
-    @PutMapping("/user/{userId}")
-    public ResponseEntity<CartDTO> addItemsToCart(@RequestBody CartItemDTO cartDTO, @PathVariable Long userId) {
-        CartDTO updatedCart = cartService.addItemsToCart(cartDTO, userId);
-        return ResponseEntity.ok(updatedCart);
-    }
+//    @PutMapping("/user/{userId}")
+//    public ResponseEntity<CartDTO> addItemsToCart(@RequestBody CartItemDTO cartDTO, @PathVariable Long userId) {
+//        CartDTO updatedCart = cartService.addItemsToCart(cartDTO, userId);
+//        return ResponseEntity.ok(updatedCart);
+//    }
 
-    @DeleteMapping("/items/{cartItemId}/user/{userId}")
-    public ResponseEntity<Void> deleteCartItems(@PathVariable Long cartItemId, @PathVariable Long userId) {
-        cartService.deleteCartItems(cartItemId, userId);
-        return ResponseEntity.noContent().build();
-    }
+
 }

@@ -1,8 +1,20 @@
 package com.ead.cart_service.exception;
 
-public class ApiResponse {
+import lombok.Getter;
 
-    public ApiResponse(int value, String message, String details) {
-        
+import java.time.LocalDateTime;
+
+@Getter
+public class ApiResponse {
+    private final int status;
+    private final String message;
+    private final LocalDateTime timestamp;
+    private final String details;
+
+    public ApiResponse(int status, String message, String details) {
+        this.status = status;
+        this.message = message;
+        this.timestamp = LocalDateTime.now();
+        this.details = details;
     }
 }

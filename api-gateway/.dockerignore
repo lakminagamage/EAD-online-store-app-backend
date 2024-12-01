@@ -1,0 +1,17 @@
+.gitignore
+node_modules
+npm-debug.log
+Dockerfile
+
+
+target/
+build/
+
+*.swp
+*.idea/
+*.iml
+*.vscode/
+.DS_Store
+
+.git/
+.gitignore

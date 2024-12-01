@@ -1,0 +1,11 @@
+target/
+build/
+
+*.swp
+*.idea/
+*.iml
+*.vscode/
+.DS_Store
+
+.git/
+.gitignore

@@ -1,4 +1,4 @@
-package com.ead.cart_service.model;
+package com.example.cart_service.model;
 
 
 import jakarta.persistence.*;
@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Data
 @Entity
-@Table(name = "cart_items")
+@Table(name = "cart_item")
 public class CartItem {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

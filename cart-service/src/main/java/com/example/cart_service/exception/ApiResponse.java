@@ -1,4 +1,4 @@
-package com.ead.cart_service.exception;
+package com.example.cart_service.exception;
 
 import lombok.Getter;
 
@@ -17,4 +17,6 @@ public class ApiResponse {
         this.timestamp = LocalDateTime.now();
         this.details = details;
     }
+
+
 }

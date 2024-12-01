@@ -1,19 +1,16 @@
-package com.ead.cart_service.dto;
+package com.example.cart_service.dto;
 
-import com.ead.cart_service.model.CartItem;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CartDTO {
     private Long id;
     private Long userId;
     private List<CartItemDTO> items;
-
 }
-
-
-
-

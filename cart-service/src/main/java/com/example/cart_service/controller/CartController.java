@@ -1,6 +1,7 @@
 package com.example.cart_service.controller;
 
 import com.example.cart_service.dto.CartDTO;
+import com.example.cart_service.dto.CartItemDTO;
 import com.example.cart_service.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,5 +34,14 @@ public class CartController extends AbstractController {
 //        CartDTO updatedCart = cartService.addItemsToCart(cartDTO, userId);
 //        return ResponseEntity.ok(updatedCart);
 //    }
+
+    @PutMapping("/user/{userId}")
+    public ResponseEntity<CartDTO> updateCart(@PathVariable("userId") Long userId, @RequestBody List<CartItemDTO> newItems) {
+        if (newItems == null || newItems.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        CartDTO updatedCart = cartService.updateCart(userId, newItems);
+        return ResponseEntity.ok(updatedCart);
+    }
 
 }

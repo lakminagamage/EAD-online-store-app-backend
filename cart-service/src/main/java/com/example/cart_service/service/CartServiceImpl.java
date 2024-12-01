@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -84,6 +85,49 @@ public class  CartServiceImpl implements CartService {
         logger.info("Cart created successfully with id: {}", savedCart.getId());
         return responseDTO;
     }
+
+    @Override
+    public CartDTO updateCart(Long userId, List<CartItemDTO> newItems) {
+        logger.info("Updating cart for userId: {}", userId);
+
+        Cart existingCart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new CartNotFoundException(userId));
+
+        Map<Long, CartItem> existingCartItemMap = existingCart.getCartItem().stream()
+                .collect(Collectors.toMap(CartItem::getProductId, item -> item));
+
+        for (CartItemDTO newItem : newItems) {
+            CartItem cartItem = existingCartItemMap.get(newItem.getProductId());
+            if (cartItem != null) {
+                cartItem.setQuantity(cartItem.getQuantity() + newItem.getQuantity());
+            } else {
+                CartItem newCartItem = new CartItem();
+                newCartItem.setProductId(newItem.getProductId());
+                newCartItem.setQuantity(newItem.getQuantity());
+                newCartItem.setPrice(newItem.getPrice());
+                newCartItem.setCart(existingCart);
+                existingCart.getCartItem().add(newCartItem);
+            }
+        }
+
+        Cart updatedCart = cartRepository.save(existingCart);
+
+        CartDTO responseDTO = new CartDTO();
+        responseDTO.setId(updatedCart.getId());
+        responseDTO.setUserId(updatedCart.getUserId());
+        responseDTO.setItems(updatedCart.getCartItem().stream().map(item -> {
+            CartItemDTO itemDTO = new CartItemDTO();
+            itemDTO.setProductId(item.getProductId());
+            itemDTO.setQuantity(item.getQuantity());
+            itemDTO.setPrice(item.getPrice());
+            return itemDTO;
+        }).collect(Collectors.toList()));
+
+        logger.info("Cart updated successfully for userId: {}", userId);
+        return responseDTO;
+    }
+
+
 
 
 }

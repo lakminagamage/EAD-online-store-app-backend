@@ -1,4 +1,4 @@
-package com.ead.cart_service.dto;
+package com.example.cart_service.dto;
 import lombok.Data;
 
 

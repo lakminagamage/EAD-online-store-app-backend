@@ -1,4 +1,4 @@
-package com.ead.cart_service.model;
+package com.example.cart_service.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -17,7 +17,7 @@ public class Cart {
     private Long userId;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
-    private List<CartItem> cartItems;
+    private List<CartItem> cartItem;
 
     public void setID(Long id) {
         this.id = id;
@@ -28,8 +28,8 @@ public class Cart {
     }
 
 
-    public void setCartItems(List<CartItem> cartItems) {
-        this.cartItems = cartItems;
+    public void setCartItems(List<CartItem> cartItem ){
+        this.cartItem = cartItem;
     }
 
 }

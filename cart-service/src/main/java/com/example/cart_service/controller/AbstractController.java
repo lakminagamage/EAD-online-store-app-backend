@@ -1,10 +1,11 @@
-package com.ead.cart_service.controller;
-import com.ead.cart_service.exception.ApiResponse;
+package com.example.cart_service.controller;
+
+import com.example.cart_service.exception.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-@RequestMapping("api/carts")
+@RequestMapping("api/v1/carts")
 public class AbstractController {
     protected <T> ResponseEntity<T> successResponse(T data, HttpStatus status) {
         return new ResponseEntity<>(data, status);
@@ -23,6 +24,4 @@ public class AbstractController {
     protected <T> ResponseEntity<T> createdResponse(T data){
         return new ResponseEntity<>(data,HttpStatus.CREATED);
     }
-
-
 }

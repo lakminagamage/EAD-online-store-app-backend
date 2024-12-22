@@ -1,4 +1,4 @@
-package com.ead.cart_service.exception;
+package com.example.cart_service.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.WebRequest;
 
 @RestControllerAdvice
-public class GlobalExceptionhandler {
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionhandler.class);
+public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(CartNotFoundException.class)
     public ResponseEntity<ApiResponse> handleCartNotFoundException(CartNotFoundException ex, WebRequest request) {

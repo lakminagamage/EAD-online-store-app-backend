@@ -1,0 +1,12 @@
+/bin/
+*.exe
+*.out
+
+*.swp
+*.idea/
+*.vscode/
+.DS_Store
+
+*.test
+*.log
+*.tmp

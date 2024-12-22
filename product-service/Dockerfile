@@ -8,6 +8,7 @@ RUN go build -o product-service main.go
 
 FROM alpine:latest
 WORKDIR /app
+COPY .env /app/
 COPY --from=builder /app/product-service /app/product-service
 EXPOSE 8081
 CMD ["./product-service"]

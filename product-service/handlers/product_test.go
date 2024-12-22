@@ -19,7 +19,7 @@ func setupTestDB() *gorm.DB {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&models.Product{})
+	db.AutoMigrate(&models.Product{}, &models.ProductImage{})
 
 	db.Create(&models.ProductType{Name: "Type1"})
 	db.Create(&models.ProductType{Name: "Type2"})
@@ -57,25 +57,36 @@ func TestGetAllProducts(t *testing.T) {
 	}
 
 	type ProductResponse struct {
-		ID   uint   `json:"ID"`
-		Name string `json:"name"`
+		ID           uint   `json:"ID"`
+		Name         string `json:"name"`
+		ProductType  string `json:"product_type"`
+		Stock        int    `json:"stock"`
 	}
 
-	var actual []ProductResponse
-	if err := json.Unmarshal(rr.Body.Bytes(), &actual); err != nil {
+	var response struct {
+		Total int               `json:"total"`
+		Data  []ProductResponse `json:"data"`
+	}
+
+	if err := json.Unmarshal(rr.Body.Bytes(), &response); err != nil {
 		t.Fatalf("could not unmarshal response: %v", err)
 	}
 
+	actual := response.Data
+
+	// Print the actual response
+	t.Logf("actual response: %v", actual)
+
 	expected := []ProductResponse{
-		{ID: 1, Name: "Product1"},
-		{ID: 2, Name: "Product2"},
-		{ID: 3, Name: "Product3"},
-		{ID: 4, Name: "Product4"},
-		{ID: 5, Name: "Product5"},
-		{ID: 6, Name: "Product6"},
-		{ID: 7, Name: "Product7"},
-		{ID: 8, Name: "Product8"},
-		{ID: 9, Name: "Product9"},
+		{ID: 1, Name: "Product1", ProductType: "Type1", Stock: 10},
+		{ID: 2, Name: "Product2", ProductType: "Type1", Stock: 20},
+		{ID: 3, Name: "Product3", ProductType: "Type1", Stock: 30},
+		{ID: 4, Name: "Product4", ProductType: "Type2", Stock: 40},
+		{ID: 5, Name: "Product5", ProductType: "Type2", Stock: 50},
+		{ID: 6, Name: "Product6", ProductType: "Type2", Stock: 60},
+		{ID: 7, Name: "Product7", ProductType: "Type3", Stock: 70},
+		{ID: 8, Name: "Product8", ProductType: "Type3", Stock: 80},
+		{ID: 9, Name: "Product9", ProductType: "Type3", Stock: 90},
 	}
 
 	if len(actual) != len(expected) {
@@ -122,10 +133,11 @@ func TestUpdateStock(t *testing.T) {
 	db := setupTestDB()
 	database.DB = db
 
-	req, err := http.NewRequest("PUT", "/products/1/stock?stock=100", nil)
+	req, err := http.NewRequest("PUT", "/products/1/stock", strings.NewReader(`{"stock": 100}`))
 	if err != nil {
 		t.Fatal(err)
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(handlers.UpdateStock)
